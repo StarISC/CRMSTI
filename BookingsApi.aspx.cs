@@ -144,7 +144,9 @@ OFFSET @start ROWS FETCH NEXT @length ROWS ONLY OPTION (RECOMPILE);";
                             row["CreatedBy"] = NormalizeUsername(reader["CreatedBy"] as string);
                             row["Amount"] = reader["Amount"];
                             row["AmountThucBan"] = reader["Amountthucban"];
-                            row["DepositDeadline"] = reader["DepositDeadline"];
+                            row["DepositDeadline"] = reader["DepositDeadline"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["DepositDeadline"]).ToString("dd/MM/yyyy")
+                                : "";
                             data.Add(row);
                         }
                     }
