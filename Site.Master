@@ -53,24 +53,24 @@
                         <li class="nav-item dropdown">
                             <a id="lnkCustomersToggle" class="nav-link dropdown-toggle stacked d-flex flex-column align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" runat="server">
                                 <i class="bi bi-people nav-icon"></i>
-                                <span class="label">Kh&#225;ch h&#224;ng</span>
+                                <span class="label">Khách hàng</span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="~/Customers.aspx" runat="server">Danh s&#225;ch kh&#225;ch h&#224;ng</a></li>
-                                <li><a class="dropdown-item" href="~/Bookings.aspx" runat="server">Danh s&#225;ch &#273;&#7863;t ch&#7895;</a></li>
+                                <li><a class="dropdown-item" href="~/Customers.aspx" runat="server">Danh sách khách hàng</a></li>
+                                <li><a class="dropdown-item" href="~/Bookings.aspx" runat="server">Danh sách đặt chỗ</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">
                             <a id="lnkConsulting" class="nav-link stacked d-flex flex-column align-items-center" href="#" runat="server">
                                 <i class="bi bi-headset nav-icon"></i>
-                                <span class="label">&#272;ang t&#432; v&#7845;n</span>
+                                <span class="label">Đang tư vấn</span>
                             </a>
                         </li>
                     </ul>
                     <div class="d-flex align-items-center gap-3 text-light">
                         <span class="fw-semibold"><asp:Literal ID="litUserName" runat="server" /></span>
-                        <asp:HyperLink ID="lnkChangePassword" runat="server" NavigateUrl="~/ChangePassword.aspx" Text="&#272;&#7893;i m&#7853;t kh&#7849;u" CssClass="nav-link text-light" />
-                        <asp:LinkButton ID="btnLogout" runat="server" OnClick="Logout_Click" Text="&#272;&#259;ng xu&#7845;t" CausesValidation="false" CssClass="btn btn-outline-light btn-sm" />
+                        <asp:HyperLink ID="lnkChangePassword" runat="server" NavigateUrl="~/ChangePassword.aspx" Text="Đổi mật khẩu" CssClass="nav-link text-light" />
+                        <asp:LinkButton ID="btnLogout" runat="server" OnClick="Logout_Click" Text="Đăng xuất" CausesValidation="false" CssClass="btn btn-outline-light btn-sm" />
                     </div>
                 </div>
             </div>
@@ -80,7 +80,7 @@
         </main>
         <footer class="bg-light border-top py-3 mt-4">
             <div class="container text-center text-muted" style="font-size: 14px;">
-                Copyright &#169; 2005. C&#244;ng ty c&#7893; ph&#7847;n d&#7883;ch v&#7909; Star International.
+                Copyright © 2005. Công ty cổ phần dịch vụ Star International.
             </div>
         </footer>
     </form>

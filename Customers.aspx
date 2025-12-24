@@ -1,5 +1,5 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Customers.aspx.cs" Inherits="Customers" MasterPageFile="~/Site.Master" %>
-<asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Danh s&#225;ch kh&#225;ch h&#224;ng</asp:Content>
+<asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Danh sách khách hàng</asp:Content>
 <asp:Content ID="HeadContent" ContentPlaceHolderID="HeadContent" runat="server">
     
     <style>
@@ -34,6 +34,20 @@
         .nowrap {
             white-space: nowrap;
         }
+        .phone-link {
+            color: #1f4fbf;
+            font-weight: 600;
+            text-decoration: none;
+            letter-spacing: 0.2px;
+        }
+        .phone-link:hover,
+        .phone-link:focus {
+            color: #173a8c;
+            text-decoration: underline;
+        }
+        #customersTable td:first-child {
+            font-variant-numeric: tabular-nums;
+        }
         #customersTable_length_custom {
             display: none;
         }
@@ -59,31 +73,31 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
                 <div>
-                    <h2 class="h4 mb-1 text-primary">Danh s&#225;ch kh&#225;ch h&#224;ng</h2>
-                    <div class="text-muted">Kh&#225;ch &#273;&#227; mua tour, nh&#243;m theo &#273;i&#7879;n tho&#7841;i</div>
+                    <h2 class="h4 mb-1 text-primary">Danh sách khách hàng</h2>
+                    <div class="text-muted">Khách đã mua tour, nhóm theo điện thoại</div>
                 </div>
             </div>
             <div class="mb-3">
                 <div class="row g-3 align-items-end flex-nowrap">
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold">&#272;i&#7879;n tho&#7841;i</label>
+                        <label class="form-label fw-semibold">Điện thoại</label>
                         <asp:TextBox ID="txtPhone" runat="server" CssClass="form-control" />
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label fw-semibold">H&#7885; v&#224; t&#234;n kh&#225;ch</label>
+                        <label class="form-label fw-semibold">Họ và tên khách</label>
                         <asp:TextBox ID="txtCustomerName" runat="server" CssClass="form-control" />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold">T&#7915; ng&#224;y</label>
+                        <label class="form-label fw-semibold">Từ ngày</label>
                         <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control" TextMode="Date" />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold">&#272;&#7871;n ng&#224;y</label>
+                        <label class="form-label fw-semibold">Đến ngày</label>
                         <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control" TextMode="Date" />
                     </div>
                     <div class="col-md-3 d-flex gap-2 justify-content-end flex-nowrap">
-                        <asp:Button ID="btnFilter" runat="server" Text="L&#7885;c" CssClass="btn btn-primary" />
-                        <asp:Button ID="btnReset" runat="server" Text="X&#243;a l&#7885;c" CssClass="btn btn-outline-secondary" CausesValidation="false" />
+                        <asp:Button ID="btnFilter" runat="server" Text="Lọc" CssClass="btn btn-primary" />
+                        <asp:Button ID="btnReset" runat="server" Text="Xóa lọc" CssClass="btn btn-outline-secondary" CausesValidation="false" />
                         <asp:Button ID="btnExport" runat="server" Text="Export Excel" CssClass="btn btn-success" CausesValidation="false" />
                     </div>
                 </div>
@@ -96,12 +110,12 @@
                 <table id="customersTable" class="table table-striped table-hover align-middle mb-0" style="width:100%">
                     <thead class="table-light">
                         <tr>
-                            <th>&#272;i&#7879;n tho&#7841;i</th>
-                            <th>Kh&#225;ch h&#224;ng</th>
-                            <th>Gi&#7899;i t&#237;nh</th>
-                            <th>Qu&#7889;c gia</th>
-                            <th>&#272;&#227; mua</th>
-                            <th>T&#7893;Tổng chi</th>
+                            <th>Điện thoại</th>
+                            <th>Khách hàng</th>
+                            <th>Giới tính</th>
+                            <th>Quốc gia</th>
+                            <th>Đã mua</th>
+                            <th>Tổng chi</th>
                         </tr>
                     </thead>
                 </table>
@@ -151,19 +165,19 @@
                             <div class="fw-semibold">Quốc gia</div>
                             <div id="detailCountries"></div>
                         </div>
-                        <div class="mb-2 fw-semibold">Lịch sử đặt chỗ</div>
+                        <div class="mb-2 fw-semibold text-primary" style="font-size: 1.15rem; letter-spacing: 0.5px;">Lịch sử đặt chỗ</div>
                         <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Mã booking</th>
-                                        <th>Ngày tạo</th>
-                                        <th>Nguồn</th>
-                                        <th>Số khách</th>
-                                        <th>Người booking</th>
-                                        <th>Code tour</th>
-                                        <th>Quốc gia</th>
+                                        <th>TT</th>
+                                        <th>Booking</th>
+                                        <th>Tour</th>
+                                        <th>Khách</th>
                                         <th>Thực bán</th>
+                                        <th>Quốc gia</th>
+                                        <th>Nguồn</th>
+                                        <th>#</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailOrdersBody"></tbody>
@@ -203,19 +217,19 @@
                             <div class="fw-semibold">Quốc gia</div>
                             <div id="detailCountries"></div>
                         </div>
-                        <div class="mb-2 fw-semibold">Lịch sử đặt chỗ</div>
+                        <div class="mb-2 fw-semibold text-primary" style="font-size: 1.15rem; letter-spacing: 0.5px;">Lịch sử đặt chỗ</div>
                         <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Mã booking</th>
-                                        <th>Ngày tạo</th>
-                                        <th>Nguồn</th>
-                                        <th>Số khách</th>
-                                        <th>Người booking</th>
-                                        <th>Code tour</th>
-                                        <th>Quốc gia</th>
+                                        <th>TT</th>
+                                        <th>Booking</th>
+                                        <th>Tour</th>
+                                        <th>Khách</th>
                                         <th>Thực bán</th>
+                                        <th>Quốc gia</th>
+                                        <th>Nguồn</th>
+                                        <th>#</th>
                                     </tr>
                                 </thead>
                                 <tbody id="detailOrdersBody"></tbody>
@@ -254,7 +268,7 @@
                     dataSrc: function (json) {
                         if (json.error) {
                             console.error('CustomersApi error:', json.error);
-                            alert('L?i t?i d? li?u: ' + json.error);
+                            alert('Lỗi tải dữ liệu: ' + json.error);
                             return [];
                         }
                         return json.data;
@@ -341,24 +355,48 @@
                     var rows = '';
                     if (resp.Orders && resp.Orders.length) {
                         $.each(resp.Orders, function (i, o) {
+                            // Tính trạng thái TT
+                            var status = '';
+                            var now = new Date();
+                            var depositDeadline = o.DepositDeadline ? new Date(o.DepositDeadline) : null;
+                            var paid = 0, total = 0;
+                            if (o.Payments && o.Payments.length) {
+                                for (var j = 0; j < o.Payments.length; j++) {
+                                    paid += parseFloat(o.Payments[j].Amount || 0);
+                                }
+                            }
+                            total = parseFloat(o.AmountThucBan || 0);
+                            // Xử lý trạng thái TT
+                            if (paid === 0) {
+                                if (depositDeadline && depositDeadline >= now) status = 'OP';
+                                else status = 'CX';
+                            } else if (paid > 0 && paid < total) {
+                                status = 'BK';
+                            } else if (paid >= total && total > 0) {
+                                status = 'FP';
+                            } else {
+                                status = '';
+                            }
+                            var tag = '<span class="tag" style="min-width:32px;display:inline-block;text-align:center;">' + status + '</span>';
+                            var info = (o.CreationDate || '') + '<br><span class="text-muted">' + (o.CreatedBy || '') + '</span>';
                             rows += '<tr>'
+                                + '<td>' + tag + '</td>'
                                 + '<td>' + (o.OrderId || '') + '</td>'
-                                + '<td>' + (o.CreationDate || '') + '</td>'
-                                + '<td>' + (o.Source || '') + '</td>'
-                                + '<td>' + (o.NumGuests || '') + '</td>'
-                                + '<td>' + (o.CreatedBy || '') + '</td>'
                                 + '<td>' + (o.ProductCode || '') + '</td>'
-                                + '<td>' + (renderTags(o.Countries) || '') + '</td>'
+                                + '<td>' + (o.NumGuests || '') + '</td>'
                                 + '<td>' + (o.AmountThucBan ? parseFloat(o.AmountThucBan).toLocaleString('vi-VN') : '') + '</td>'
+                                + '<td>' + (renderTags(o.Countries) || '') + '</td>'
+                                + '<td>' + (o.Source || '') + '</td>'
+                                + '<td>' + info + '</td>'
                                 + '</tr>';
                         });
                     } else {
-                        rows = '<tr><td colspan="8" class="text-center text-muted">Chua c? booking</td></tr>';
+                        rows = '<tr><td colspan="8" class="text-center text-muted">Chưa có booking</td></tr>';
                     }
                     $('#detailOrdersBody').html(rows);
                 },
                 error: function () {
-                    $('#detailError').text('L?i t?i Chi tiết khách hàng').show();
+                    $('#detailError').text('Lỗi tại Chi tiết khách hàng').show();
                 },
                 complete: function () {
                     $('#detailLoading').hide();

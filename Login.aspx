@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html>
 <head runat="server">
-    <title>&#272;&#259;ng nh&#7853;p CRM</title>
+    <title>Đăng nhập CRM</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="document/StarTravel.ico" type="image/x-icon" />
@@ -73,21 +73,21 @@
                 <img src="document/logo.png" alt="StarTravel" />
                 <div class="text">STAR CRM</div>
             </div>
-            <h2>&#272;&#259;ng nh&#7853;p</h2>
+            <h2>Đăng nhập</h2>
             <div class="subtitle">Quản trị chăm sóc khách hàng & booking</div>
             <div class="mb-3">
-                <label for="txtUsername" class="form-label">T&#224;i kho&#7843;n</label>
+                <label for="txtUsername" class="form-label">Tài khoản</label>
                 <asp:TextBox ID="txtUsername" runat="server" CssClass="form-control" />
             </div>
             <div class="mb-3">
-                <label for="txtPassword" class="form-label">M&#7853;t kh&#7849;u</label>
+                <label for="txtPassword" class="form-label">Mật khẩu</label>
                 <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" CssClass="form-control" />
             </div>
             <div class="form-check mb-3">
                 <asp:CheckBox ID="chkRemember" runat="server" CssClass="form-check-input" />
-                <label class="form-check-label" for="chkRemember">Ghi nh&#7899; &#273;&#259;ng nh&#7853;p</label>
+                <label class="form-check-label" for="chkRemember">Ghi nhớ đăng nhập</label>
             </div>
-            <asp:Button ID="btnLogin" runat="server" Text="&#272;&#259;ng nh&#7853;p" CssClass="btn btn-primary w-100 fw-bold py-2" OnClick="btnLogin_Click" />
+            <asp:Button ID="btnLogin" runat="server" Text="Đăng nhập" CssClass="btn btn-primary w-100 fw-bold py-2" OnClick="btnLogin_Click" />
             <div class="message">
                 <asp:Literal ID="litMessage" runat="server" />
             </div>

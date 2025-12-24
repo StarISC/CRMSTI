@@ -147,7 +147,7 @@ OUTER APPLY (
 SELECT TOP 50
     o.orderid,
     o.Creationdate,
-    o.ctnguon,
+    o.ctnguon,o.DepositDeadline,
     o.Amountthucban,
     ISNULL(guestCounts.TotalGuests, 0) AS NumGuests,
     u.username AS CreatedBy,
@@ -186,7 +186,8 @@ ORDER BY o.Creationdate DESC, o.orderid DESC;", conn))
                         while (reader.Read())
                         {
                             var row = new Dictionary<string, object>();
-                            row["OrderId"] = reader["orderid"];
+                            var orderId = reader["orderid"];
+                            row["OrderId"] = orderId;
                             row["CreationDate"] = reader["Creationdate"] != DBNull.Value ? Convert.ToDateTime(reader["Creationdate"]).ToString("dd/MM/yyyy") : "";
                             row["Source"] = reader["ctnguon"] as string;
                             row["NumGuests"] = reader["NumGuests"] != DBNull.Value ? reader["NumGuests"].ToString() : "";
@@ -194,6 +195,36 @@ ORDER BY o.Creationdate DESC, o.orderid DESC;", conn))
                             row["ProductCode"] = reader["CodeTour"] as string;
                             row["Countries"] = reader["Countries"] as string;
                             row["AmountThucBan"] = reader["Amountthucban"];
+
+                            // Truy vấn tổng tiền đã thanh toán
+                            decimal paid = 0;
+                            using (var payCmd = new SqlCommand("SELECT SUM(ISNULL(Amount,0)) FROM payment WHERE OrderId=@oid", conn))
+                            {
+                                payCmd.Parameters.AddWithValue("@oid", orderId);
+                                var paidObj = payCmd.ExecuteScalar();
+                                paid = paidObj != DBNull.Value ? Convert.ToDecimal(paidObj) : 0;
+                            }
+                            // Lấy DepositDeadline từ order
+                            DateTime? depositDeadline = null;
+                            if (reader["DepositDeadline"] != DBNull.Value)
+                                depositDeadline = Convert.ToDateTime(reader["DepositDeadline"]);
+                            if (depositDeadline.HasValue)
+                                row["DepositDeadline"] = depositDeadline.Value.ToString("yyyy-MM-dd");
+                            else
+                                row["DepositDeadline"] = null;
+
+                            // Tính trạng thái TT
+                            decimal amountThucBan = reader["Amountthucban"] != DBNull.Value ? Convert.ToDecimal(reader["Amountthucban"]) : 0;
+                            string status = "";
+                            if (paid == 0)
+                            {
+                                if (depositDeadline.HasValue && depositDeadline.Value >= DateTime.Now) status = "OP";
+                                else status = "CX";
+                            }
+                            else if (paid > 0 && paid < amountThucBan) status = "BK";
+                            else if (paid >= amountThucBan && amountThucBan > 0) status = "FP";
+                            row["TT"] = status;
+
                             orders.Add(row);
                         }
                     }
