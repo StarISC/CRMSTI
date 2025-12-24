@@ -56,7 +56,8 @@
                                 <span class="label">Khách hàng</span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="~/Customers.aspx" runat="server">Danh sách khách hàng</a></li>
+                                <li><a class="dropdown-item" href="~/Customers.aspx" runat="server">Danh s&#225;ch contact</a></li>
+                                <li><a class="dropdown-item" href="~/CustomersTraveled.aspx" runat="server">Kh&#225;ch &#273;&#227; &#273;i tour</a></li>
                                 <li><a class="dropdown-item" href="~/Bookings.aspx" runat="server">Danh sách đặt chỗ</a></li>
                             </ul>
                         </li>

@@ -22,6 +22,17 @@
             border: 1px solid #dbe4ff;
             font-size: 13px;
         }
+        .tag-code {
+            display: inline-block;
+            background: #fff3cd;
+            color: #8a4b0f;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+            margin-top: 4px;
+            border: 1px solid #ffe4a3;
+            font-size: 12px;
+        }
         .loading-overlay {
             position: fixed;
             inset: 0;
@@ -113,8 +124,9 @@
                             <th>Điện thoại</th>
                             <th>Khách hàng</th>
                             <th>Giới tính</th>
-                            <th>Quốc gia</th>
+                                        <th>Qu&#7889;c gia</th>
                             <th>Đã mua</th>
+                            <th>Tour gần nhất</th>
                             <th>Tổng chi</th>
                         </tr>
                     </thead>
@@ -165,7 +177,7 @@
                             <div class="fw-semibold">Quốc gia</div>
                             <div id="detailCountries"></div>
                         </div>
-                        <div class="mb-2 fw-semibold text-primary" style="font-size: 1.15rem; letter-spacing: 0.5px;">Lịch sử đặt chỗ</div>
+                        <div class="mb-2 fw-bold text-primary border-bottom border-2 pb-1" style="font-size: 1.15rem; letter-spacing: 0.5px;">L&#7883;ch s&#7917; &#273;&#7863;t ch&#7895;</div>
                         <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle mb-0">
                                 <thead class="table-light">
@@ -173,10 +185,10 @@
                                         <th>TT</th>
                                         <th>Booking</th>
                                         <th>Tour</th>
-                                        <th>Khách</th>
-                                        <th>Thực bán</th>
-                                        <th>Quốc gia</th>
-                                        <th>Nguồn</th>
+                                        <th>Kh&#225;ch</th>
+                                        <th>Th&#7921;c b&#225;n</th>
+                                        <th>Qu&#7889;c gia</th>
+                                        <th>Ngu&#7891;n</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
@@ -217,7 +229,7 @@
                             <div class="fw-semibold">Quốc gia</div>
                             <div id="detailCountries"></div>
                         </div>
-                        <div class="mb-2 fw-semibold text-primary" style="font-size: 1.15rem; letter-spacing: 0.5px;">Lịch sử đặt chỗ</div>
+                        <div class="mb-2 fw-bold text-primary border-bottom border-2 pb-1" style="font-size: 1.15rem; letter-spacing: 0.5px;">L&#7883;ch s&#7917; &#273;&#7863;t ch&#7895;</div>
                         <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle mb-0">
                                 <thead class="table-light">
@@ -225,10 +237,10 @@
                                         <th>TT</th>
                                         <th>Booking</th>
                                         <th>Tour</th>
-                                        <th>Khách</th>
-                                        <th>Thực bán</th>
-                                        <th>Quốc gia</th>
-                                        <th>Nguồn</th>
+                                        <th>Kh&#225;ch</th>
+                                        <th>Th&#7921;c b&#225;n</th>
+                                        <th>Qu&#7889;c gia</th>
+                                        <th>Ngu&#7891;n</th>
                                         <th>#</th>
                                     </tr>
                                 </thead>
@@ -286,7 +298,13 @@
                     { data: 'Gender' },
                     { data: 'ProductName', render: function (data) { return renderTags(data); }, orderable: false },
                     { data: 'TotalBookings' },
-                { data: 'TotalAmountThucBan', render: function (data) { return data ? parseFloat(data).toLocaleString('vi-VN') : ''; } }
+                    { data: null, render: function (data, type, row) {
+                        if (!row || (!row.LatestDeparture && !row.LatestCode)) return '';
+                        var dateLine = row.LatestDeparture || '';
+                        var codeLine = row.LatestCode ? '<div class="tag-code">' + $('<div/>').text(row.LatestCode).html() + '</div>' : '';
+                        return dateLine + codeLine;
+                    } },
+                    { data: 'TotalAmountThucBan', render: function (data) { return data ? parseFloat(data).toLocaleString('vi-VN') : ''; } }
                 ]
             });
             $('#customersTable_length_custom').empty().append($('#customersTable_length'));

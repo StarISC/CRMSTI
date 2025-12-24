@@ -96,7 +96,8 @@ SELECT
     l.ctgender,
     a.TotalBookings,
     a.TotalAmountThucBan,
-    prod.Countries AS ProductName
+    prod.Countries AS ProductName,
+    dep.DepartureDates
 FROM agg a
 JOIN latest l ON l.CleanTel = a.CleanTel AND l.rn = 1
 OUTER APPLY (
@@ -127,6 +128,16 @@ OUTER APPLY (
         ).value('.', 'nvarchar(max)'), 1, 2, '') AS Names
     ) prodNames
 ) prod
+OUTER APPLY (
+    SELECT STUFF((
+        SELECT DISTINCT ', ' + CONVERT(varchar(10), p.ngayKhoiHanh, 103)
+        FROM base b3
+        JOIN customer c3 ON c3.orderID = b3.orderid
+        JOIN product p ON p.id = c3.ProductID
+        WHERE b3.CleanTel = a.CleanTel AND p.ngayKhoiHanh IS NOT NULL
+        FOR XML PATH(''), TYPE
+    ).value('.', 'nvarchar(max)'), 1, 2, '') AS DepartureDates
+) dep
 ORDER BY a.LatestCreation DESC, a.TotalBookings DESC, l.ctTel OPTION (RECOMPILE);";
 
         Response.Clear();
@@ -139,7 +150,7 @@ ORDER BY a.LatestCreation DESC, a.TotalBookings DESC, l.ctTel OPTION (RECOMPILE)
         Response.BinaryWrite(Encoding.UTF8.GetPreamble());
 
         var sb = new StringBuilder();
-        sb.AppendLine("Phone,CustomerName,Gender,Countries,TotalBookings,TotalAmount");
+        sb.AppendLine("Phone,CustomerName,Gender,Countries,TotalBookings,TotalAmount,DepartureDates");
 
         using (var conn = Db.CreateConnection())
         using (var cmd = new SqlCommand(sql, conn))
@@ -157,13 +168,15 @@ ORDER BY a.LatestCreation DESC, a.TotalBookings DESC, l.ctTel OPTION (RECOMPILE)
                     string countries = reader["ProductName"] as string;
                     string totalBookings = reader["TotalBookings"] != DBNull.Value ? Convert.ToInt32(reader["TotalBookings"]).ToString() : "0";
                     string totalAmount = reader["TotalAmountThucBan"] != DBNull.Value ? Convert.ToDecimal(reader["TotalAmountThucBan"]).ToString() : "0";
-                    sb.AppendLine(string.Format("{0},{1},{2},{3},{4},{5}",
+                    string departureDates = reader["DepartureDates"] as string;
+                    sb.AppendLine(string.Format("{0},{1},{2},{3},{4},{5},{6}",
                         CsvEscape(phoneVal),
                         CsvEscape(nameVal),
                         CsvEscape(genderVal),
                         CsvEscape(countries),
                         CsvEscape(totalBookings),
-                        CsvEscape(totalAmount)
+                        CsvEscape(totalAmount),
+                        CsvEscape(departureDates)
                     ));
                 }
             }

@@ -126,10 +126,19 @@ SELECT
     l.ctgender,
     a.TotalBookings,
     a.LatestCreation,
+    latestDeparture.LatestDeparture,
+    latestDeparture.LatestCode,
     a.TotalAmountThucBan,
     prod.Countries AS ProductName
 FROM agg a
 JOIN latest l ON l.CleanTel = a.CleanTel AND l.rn = 1
+OUTER APPLY (
+    SELECT MAX(p.ngayKhoiHanh) AS LatestDeparture,
+           MAX(p.code) AS LatestCode
+    FROM customer c3
+    JOIN product p ON p.id = c3.ProductID
+    WHERE c3.orderID = l.orderid AND p.ngayKhoiHanh IS NOT NULL
+) latestDeparture
 OUTER APPLY (
     SELECT TOP 1
         CASE 
@@ -178,6 +187,11 @@ OFFSET @start ROWS FETCH NEXT @length ROWS ONLY OPTION (RECOMPILE);";
                             row["Gender"] = NormalizeGender(reader["ctgender"] as string);
                             row["ProductName"] = reader["ProductName"] as string;
                             row["TotalBookings"] = reader["TotalBookings"];
+                            row["LatestCreation"] = reader["LatestCreation"];
+                            row["LatestDeparture"] = reader["LatestDeparture"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["LatestDeparture"]).ToString("dd/MM/yyyy")
+                                : "";
+                            row["LatestCode"] = reader["LatestCode"] as string;
                             row["TotalAmountThucBan"] = reader["TotalAmountThucBan"];
                             data.Add(row);
                         }
