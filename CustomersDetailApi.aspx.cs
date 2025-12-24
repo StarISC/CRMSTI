@@ -223,7 +223,7 @@ ORDER BY o.Creationdate DESC, o.orderid DESC;", conn))
                             }
                             else if (paid > 0 && paid < amountThucBan) status = "BK";
                             else if (paid >= amountThucBan && amountThucBan > 0) status = "FP";
-                            row["TT"] = status;
+                            row["Status"] = status;
 
                             orders.Add(row);
                         }

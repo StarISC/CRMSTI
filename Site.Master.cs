@@ -29,7 +29,7 @@ public partial class SiteMaster : MasterPage
         ResetMenuClasses();
 
         var path = VirtualPathUtility.ToAppRelative(Request.Path).ToLowerInvariant();
-        if (path.Contains("bookings.aspx") || path.Contains("customers.aspx"))
+        if (path.Contains("bookings.aspx") || path.Contains("customers.aspx") || path.Contains("customerstraveled.aspx"))
         {
             SetActive(lnkCustomersToggle, CustomersClass);
         }

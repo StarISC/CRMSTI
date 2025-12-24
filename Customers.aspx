@@ -22,6 +22,36 @@
             border: 1px solid #dbe4ff;
             font-size: 13px;
         }
+        .tag-status {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 12px;
+            border: 1px solid transparent;
+            min-width: 32px;
+            text-align: center;
+        }
+        .tag-status-OP {
+            background: #e2e8f0;
+            color: #1f2937;
+            border-color: #cbd5e1;
+        }
+        .tag-status-CX {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #fecaca;
+        }
+        .tag-status-BK {
+            background: #fef3c7;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+        .tag-status-FP {
+            background: #dcfce7;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
         .tag-code {
             display: inline-block;
             background: #fff3cd;
@@ -372,30 +402,30 @@
                     $('#detailCountries').html(renderTags(resp.ProductName));
                     var rows = '';
                     if (resp.Orders && resp.Orders.length) {
+
                         $.each(resp.Orders, function (i, o) {
-                            // Tính trạng thái TT
-                            var status = '';
-                            var now = new Date();
-                            var depositDeadline = o.DepositDeadline ? new Date(o.DepositDeadline) : null;
-                            var paid = 0, total = 0;
-                            if (o.Payments && o.Payments.length) {
-                                for (var j = 0; j < o.Payments.length; j++) {
-                                    paid += parseFloat(o.Payments[j].Amount || 0);
-                                }
-                            }
-                            total = parseFloat(o.AmountThucBan || 0);
-                            // Xử lý trạng thái TT
-                            if (paid === 0) {
-                                if (depositDeadline && depositDeadline >= now) status = 'OP';
-                                else status = 'CX';
-                            } else if (paid > 0 && paid < total) {
-                                status = 'BK';
-                            } else if (paid >= total && total > 0) {
-                                status = 'FP';
-                            } else {
-                                status = '';
-                            }
-                            var tag = '<span class="tag" style="min-width:32px;display:inline-block;text-align:center;">' + status + '</span>';
+                            var status = o.Status || "";
+                            var tag = status ? '<span class="tag-status tag-status-' + status + '">' + $('<div/>').text(status).html() + '</span>' : "";
+                            var info = (o.CreationDate || "") + '<br><span class="text-muted">' + (o.CreatedBy || "") + '</span>';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                             var info = (o.CreationDate || '') + '<br><span class="text-muted">' + (o.CreatedBy || '') + '</span>';
                             rows += '<tr>'
                                 + '<td>' + tag + '</td>'

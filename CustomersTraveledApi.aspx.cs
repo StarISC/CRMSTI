@@ -79,16 +79,17 @@ public partial class CustomersTraveledApi : System.Web.UI.Page
 ;WITH base AS (
     SELECT c.Id,
            LTRIM(RTRIM(c.passport)) AS Passport,
-           c.LastName,
-           c.Firstname,
+           COALESCE(NULLIF(LTRIM(RTRIM(c.LastName)), ''), LTRIM(RTRIM(o.ctLastname))) AS LastName,
+           COALESCE(NULLIF(LTRIM(RTRIM(c.Firstname)), ''), LTRIM(RTRIM(o.ctFirstname))) AS Firstname,
            c.gender,
            c.birthday,
-           c.tel,
+           LTRIM(RTRIM(c.tel)) AS tel,
            c.email,
            c.nationallity,
            c.Creationdate,
            c.ProductID
     FROM customer c
+    LEFT JOIN [order] o ON o.OrderID = c.orderID
     " + where + @"
 ),
 latest_contact AS (
@@ -102,6 +103,58 @@ page_list AS (
     WHERE rn = 1
     ORDER BY Creationdate DESC, Passport
     OFFSET @start ROWS FETCH NEXT @length ROWS ONLY
+),
+phones AS (
+    SELECT s.Passport,
+           STUFF((
+               SELECT ';' + s3.Phone + '||' + s3.Source
+               FROM (
+                   SELECT Phone,
+                          Source,
+                          ROW_NUMBER() OVER (PARTITION BY Passport, PhoneClean ORDER BY SourcePriority, Phone) AS rn
+                   FROM (
+                       SELECT b.Passport,
+                              LTRIM(RTRIM(ISNULL(b.tel,''))) AS Phone,
+                              CASE
+                                  WHEN LEFT(pn.PhoneClean, 2) = '84' AND LEN(pn.PhoneClean) > 9 THEN '0' + RIGHT(pn.PhoneClean, LEN(pn.PhoneClean) - 2)
+                                  ELSE pn.PhoneClean
+                              END AS PhoneClean,
+                              'customer' AS Source,
+                              0 AS SourcePriority
+                       FROM base b
+                       CROSS APPLY (
+                           SELECT REPLACE(REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(b.tel,''))),' ',''),'-',''),'.',''),'+','') AS PhoneClean
+                       ) pn
+                       WHERE ISNULL(b.tel,'') <> ''
+                       UNION ALL
+                       SELECT LTRIM(RTRIM(c.passport)) AS Passport,
+                              LTRIM(RTRIM(ISNULL(o.ctTel,''))) AS Phone,
+                              CASE
+                                  WHEN LEFT(pn.PhoneClean, 2) = '84' AND LEN(pn.PhoneClean) > 9 THEN '0' + RIGHT(pn.PhoneClean, LEN(pn.PhoneClean) - 2)
+                                  ELSE pn.PhoneClean
+                              END AS PhoneClean,
+                              'order' AS Source,
+                              1 AS SourcePriority
+                       FROM customer c
+                       JOIN [order] o ON o.OrderID = c.orderID
+                       CROSS APPLY (
+                           SELECT REPLACE(REPLACE(REPLACE(REPLACE(LTRIM(RTRIM(ISNULL(o.ctTel,''))),' ',''),'-',''),'.',''),'+','') AS PhoneClean
+                       ) pn
+                       WHERE c.visible = 1
+                         AND LTRIM(RTRIM(ISNULL(c.passport,''))) <> ''
+                         AND ISNULL(o.ctTel,'') <> ''
+                   ) s2
+                   WHERE s2.Passport = s.Passport
+               ) s3
+               WHERE s3.rn = 1
+               FOR XML PATH(''), TYPE
+           ).value('.', 'nvarchar(max)'), 1, 1, '') AS Phones
+    FROM (
+        SELECT DISTINCT LTRIM(RTRIM(c.passport)) AS Passport
+        FROM customer c
+        WHERE c.visible = 1
+          AND LTRIM(RTRIM(ISNULL(c.passport,''))) <> ''
+    ) s
 ),
 latest_tour AS (
     SELECT
@@ -139,7 +192,7 @@ SELECT
     p.Firstname,
     p.gender,
     p.birthday,
-    p.tel,
+    ph.Phones,
     p.email,
     p.nationallity,
     lt.LatestDeparture,
@@ -147,6 +200,7 @@ SELECT
     tc.TripCount,
     cn.Countries
 FROM page_list p
+LEFT JOIN phones ph ON ph.Passport = p.Passport
 LEFT JOIN latest_tour lt ON lt.Passport = p.Passport AND lt.rn = 1
 LEFT JOIN trip_counts tc ON tc.Passport = p.Passport
 LEFT JOIN countries cn ON cn.Passport = p.Passport
@@ -169,7 +223,7 @@ OPTION (RECOMPILE);";
                             row["CustomerName"] = BuildCustomerName(reader["LastName"] as string, reader["Firstname"] as string);
                             row["Gender"] = NormalizeGender(reader["gender"] as string);
                             row["Birthday"] = reader["birthday"] as string;
-                            row["Phone"] = reader["tel"] as string;
+                            row["Phone"] = reader["Phones"] as string;
                             row["Nationality"] = reader["nationallity"] as string;
                             row["LatestCreation"] = reader["LatestDeparture"] != DBNull.Value
                                 ? Convert.ToDateTime(reader["LatestDeparture"]).ToString("dd/MM/yyyy")
