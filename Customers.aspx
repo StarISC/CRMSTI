@@ -62,6 +62,7 @@
             margin-top: 4px;
             border: 1px solid #ffe4a3;
             font-size: 12px;
+            white-space: nowrap;
         }
         .loading-overlay {
             position: fixed;
@@ -330,7 +331,7 @@
                     { data: 'TotalBookings' },
                     { data: null, render: function (data, type, row) {
                         if (!row || (!row.LatestDeparture && !row.LatestCode)) return '';
-                        var dateLine = row.LatestDeparture || '';
+                        var dateLine = row.LatestDeparture ? '<div>' + $('<div/>').text(row.LatestDeparture).html() + '</div>' : '';
                         var codeLine = row.LatestCode ? '<div class="tag-code">' + $('<div/>').text(row.LatestCode).html() + '</div>' : '';
                         return dateLine + codeLine;
                     } },

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Bookings.aspx.cs" Inherits="Bookings" MasterPageFile="~/Site.Master" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Bookings.aspx.cs" Inherits="Bookings" MasterPageFile="~/Site.Master" %>
 <asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Danh sách đặt chỗ</asp:Content>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
@@ -102,6 +102,12 @@
             color: #3730a3;
             border-color: #c7d2fe;
         }
+        #bookingDetailModal .modal-dialog {
+            max-width: 900px;
+        }
+        #bookingDetailLoading {
+            display: none !important;
+        }
     </style>
 </asp:Content>
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -147,18 +153,91 @@
                         <tr>
                             <th>TT</th>
                             <th>Booking</th>
-                            <th>Kh&#225;ch</th>
-                            <th>Kh&#225;ch h&#224;ng</th>
-                            <th>Gi&#7899;i t&#237;nh</th>
-                            <th>&#272;i&#7879;n tho&#7841;i</th>
-                            <th>Qu&#7889;c gia</th>
-                            <th>Thanh to&#225;n</th>
-                            <th>Ng&#432;&#7901;i t&#7841;o</th>
+                            <th>Khách</th>
+                            <th>Khách hàng</th>
+                            <th>Giới tính</th>
+                            <th>Điện thoại</th>
+                            <th>Quốc gia</th>
+                            <th>Thanh toán</th>
+                            <th>Người tạo</th>
                         </tr>
                     </thead>
                 </table>
             </div>
         </div>
+        <div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Chi tiết booking</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="bookingDetailLoading" class="d-flex justify-content-center my-3" style="display:none;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                    <div id="bookingDetailContent" style="display:none;">
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <div class="fw-semibold">Booking</div>
+                                <div id="bookingDetailOrderId"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="fw-semibold">Tổng khách</div>
+                                <div id="bookingDetailTotalCustomers"></div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="fw-semibold">Tổng giá bán</div>
+                                <div id="bookingDetailTotalPrice"></div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Khách</th>
+                                        <th>Giới tính</th>
+                                        <th>Điện thoại</th>
+                                        <th>Passport</th>
+                                        <th>Phòng</th>
+                                        <th>Giá bán</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookingDetailBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="bookingDetailError" class="text-danger" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                <div class="modal-body">
+                    <div id="bookingDetailLoading" class="d-flex justify-content-center my-3" style="display:none;">
+                        <div class="spinner-border text-primary" role="status"></div>
+                    </div>
+                    <div id="bookingDetailContent" style="display:none;">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Khách</th>
+                                        <th>Giới tính</th>
+                                        <th>Điện thoại</th>
+                                        <th>Passport</th>
+                                        <th>Giá bán</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bookingDetailBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div id="bookingDetailError" class="text-danger" style="display:none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
     </div>
     <script>
         function renderMoney(val) {
@@ -202,7 +281,11 @@
                         var safe = $('<div/>').text(data).html();
                         return '<span class="tag-status tag-status-' + safe + '">' + safe + '</span>';
                     }},
-                    { data: 'OrderId' },
+                    { data: 'OrderId', render: function (data) {
+                        if (!data) return '';
+                        var safe = $('<div/>').text(data).html();
+                        return '<a href="#" class="booking-link" data-orderid="' + safe + '">' + safe + '</a>';
+                    } },
                     { data: 'CustomerCount' },
                     { data: null, render: function (data, type, row) {
                         var name = row && row.CustomerName ? $('<div/>').text(row.CustomerName).html() : '';
@@ -249,6 +332,66 @@
                 $('#<%=txtSource.ClientID%>').val('');
                 table.ajax.reload();
             });
+
+            $('#bookingsTable').on('click', '.booking-link', function (e) {
+                e.preventDefault();
+                var orderId = $(this).data('orderid');
+                loadBookingDetail(orderId);
+            });
         });
+
+        function loadBookingDetail(orderId) {
+            var modalEl = document.getElementById('bookingDetailModal');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            $('#bookingDetailError').hide();
+            $('#bookingDetailContent').hide();
+            $('#bookingDetailBody').empty();
+            $('#bookingDetailOrderId').text('');
+            $('#bookingDetailTotalCustomers').text('');
+            $('#bookingDetailTotalPrice').text('');
+            $('#bookingDetailLoading').show();
+            modal.show();
+            $.ajax({
+                url: 'BookingsDetailApi.aspx',
+                type: 'GET',
+                dataType: 'json',
+                data: { orderId: orderId },
+                success: function (resp) {
+                    if (resp && resp.error) {
+                        $('#bookingDetailError').text(resp.error).show();
+                        $('#bookingDetailLoading').hide();
+                        return;
+                    }
+                    if (resp && resp.summary) {
+                        $('#bookingDetailOrderId').text(resp.summary.OrderId || '');
+                        $('#bookingDetailTotalCustomers').text(resp.summary.TotalCustomers || '0');
+                        $('#bookingDetailTotalPrice').text(resp.summary.TotalPrice ? renderMoney(resp.summary.TotalPrice) : '0');
+                    }
+                    var rows = '';
+                    if (resp && resp.data && resp.data.length) {
+                        $.each(resp.data, function (i, o) {
+                            rows += '<tr>'
+                                + '<td>' + (o.CustomerName || '') + '</td>'
+                                + '<td>' + (o.Gender || '') + '</td>'
+                                + '<td>' + (o.Phone || '') + '</td>'
+                                + '<td>' + (o.Passport || '') + '</td>'
+                                + '<td>' + (o.Room || '') + '</td>'
+                                + '<td>' + (o.Price ? renderMoney(o.Price) : '') + '</td>'
+                                + '</tr>';
+                        });
+                    } else {
+                        rows = '<tr><td colspan="6" class="text-center text-muted">Chưa có dữ liệu</td></tr>';
+                    }
+                    $('#bookingDetailBody').html(rows);
+                    $('#bookingDetailLoading').hide();
+                    $('#bookingDetailContent').show();
+                },
+                error: function () {
+                    $('#bookingDetailError').text('Lỗi tải chi tiết booking').show();
+                    $('#bookingDetailLoading').hide();
+                },
+                complete: function () { }
+            });
+        }
     </script>
 </asp:Content>
