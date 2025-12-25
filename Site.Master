@@ -45,7 +45,7 @@
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-center">
                         <li class="nav-item">
-                            <a id="lnkDashboard" class="nav-link stacked d-flex flex-column align-items-center" href="~/Default.aspx" runat="server">
+                            <a id="lnkDashboard" class="nav-link stacked d-flex flex-column align-items-center" href="~/Dashboard/Default.aspx" runat="server">
                                 <i class="bi bi-speedometer2 nav-icon"></i>
                                 <span class="label">Dashboard</span>
                             </a>
@@ -56,9 +56,20 @@
                                 <span class="label">Khách hàng</span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="~/Customers.aspx" runat="server">Danh s&#225;ch contact</a></li>
-                                <li><a class="dropdown-item" href="~/CustomersTraveled.aspx" runat="server">Kh&#225;ch &#273;&#227; &#273;i tour</a></li>
-                                <li><a class="dropdown-item" href="~/Bookings.aspx" runat="server">Danh sách đặt chỗ</a></li>
+                                <li><a class="dropdown-item" href="~/Customers/Customers.aspx" runat="server">Danh s&#225;ch contact</a></li>
+                                <li><a class="dropdown-item" href="~/Customers/CustomersTraveled.aspx" runat="server">Kh&#225;ch &#273;&#227; &#273;i tour</a></li>
+                                <li><a class="dropdown-item" href="~/Bookings/Bookings.aspx" runat="server">Danh sách đặt chỗ</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a id="lnkAgentsToggle" class="nav-link dropdown-toggle stacked d-flex flex-column align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" runat="server">
+                                <i class="bi bi-briefcase nav-icon"></i>
+                                <span class="label">Đại lý &amp; CTV</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="~/Agents/Agents.aspx" runat="server">Danh sách đại lý</a></li>
+                                <li><a class="dropdown-item" href="~/Agents/AgentRequests.aspx" runat="server">Yêu cầu tour</a></li>
+                                <li><a class="dropdown-item" href="~/Agents/AgentCare.aspx" runat="server">Lịch sử chăm sóc</a></li>
                             </ul>
                         </li>
                         <li class="nav-item">

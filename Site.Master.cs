@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Web;
 using System.Web.Security;
 using System.Web.UI;
@@ -8,6 +8,7 @@ public partial class SiteMaster : MasterPage
 {
     private const string DashboardClass = "nav-link stacked d-flex flex-column align-items-center";
     private const string CustomersClass = "nav-link dropdown-toggle stacked d-flex flex-column align-items-center";
+    private const string AgentsClass = "nav-link dropdown-toggle stacked d-flex flex-column align-items-center";
     private const string ConsultingClass = "nav-link stacked d-flex flex-column align-items-center";
 
     protected void Page_Load(object sender, EventArgs e)
@@ -29,9 +30,13 @@ public partial class SiteMaster : MasterPage
         ResetMenuClasses();
 
         var path = VirtualPathUtility.ToAppRelative(Request.Path).ToLowerInvariant();
-        if (path.Contains("bookings.aspx") || path.Contains("customers.aspx") || path.Contains("customerstraveled.aspx"))
+        if (path.Contains("/customers/") || path.Contains("/bookings/"))
         {
             SetActive(lnkCustomersToggle, CustomersClass);
+        }
+        else if (path.Contains("/agents/"))
+        {
+            SetActive(lnkAgentsToggle, AgentsClass);
         }
         else if (path.Contains("consulting.aspx"))
         {
@@ -53,6 +58,11 @@ public partial class SiteMaster : MasterPage
         if (lnkCustomersToggle != null)
         {
             lnkCustomersToggle.Attributes["class"] = CustomersClass;
+        }
+
+        if (lnkAgentsToggle != null)
+        {
+            lnkAgentsToggle.Attributes["class"] = AgentsClass;
         }
 
         if (lnkConsulting != null)

@@ -7,7 +7,7 @@ public partial class Login : System.Web.UI.Page
     {
         if (!IsPostBack && User != null && User.Identity.IsAuthenticated)
         {
-            Response.Redirect("~/Default.aspx");
+            Response.Redirect("~/Dashboard/Default.aspx");
         }
     }
 

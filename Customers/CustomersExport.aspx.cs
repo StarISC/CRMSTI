@@ -4,16 +4,10 @@ using System.Data.SqlClient;
 using System.Text;
 using System.Web;
 
-public partial class CustomersExport : System.Web.UI.Page
+public partial class CustomersExport : BasePage
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (Session["UserId"] == null)
-        {
-            Response.StatusCode = 401;
-            HttpContext.Current.ApplicationInstance.CompleteRequest();
-            return;
-        }
         var role = Session["Role"] as string;
         bool isAdmin = !string.IsNullOrEmpty(role) && role.Equals("admin", StringComparison.OrdinalIgnoreCase);
         if (!isAdmin)
