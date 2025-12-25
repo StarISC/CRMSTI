@@ -35,8 +35,15 @@ public partial class BookingsApi : System.Web.UI.Page
         string bookingDate = (Request["bookingDate"] ?? string.Empty).Trim();
         bool sortByAmount = Request["sort"] == "amount";
 
-        var where = "WHERE o.Visible = 1";
+        var excludeNames = new[] { "tour leader", "first name", "star travel", "summer uyen" };
         var parameters = new List<SqlParameter>();
+        var baseWhere = "WHERE o.Visible = 1";
+        baseWhere += " AND LOWER(LTRIM(RTRIM(ISNULL(o.ctLastname,'')))) + ' ' + LOWER(LTRIM(RTRIM(ISNULL(o.ctFirstname,'')))) NOT IN (@ex1,@ex2,@ex3,@ex4)";
+        for (int i = 0; i < excludeNames.Length; i++)
+        {
+            parameters.Add(new SqlParameter("@ex" + (i + 1), excludeNames[i]));
+        }
+        var where = baseWhere;
         if (!string.IsNullOrWhiteSpace(orderId))
         {
             where += " AND CAST(o.orderid AS NVARCHAR(50)) LIKE @orderId";
@@ -77,9 +84,10 @@ public partial class BookingsApi : System.Web.UI.Page
             {
                 conn.Open();
 
-                using (var countCmd = new SqlCommand("SELECT COUNT(*) FROM [order] o WHERE o.Visible = 1", conn))
+                using (var countCmd = new SqlCommand("SELECT COUNT(*) FROM [order] o " + baseWhere, conn))
                 {
                     countCmd.CommandTimeout = Db.CommandTimeoutSeconds;
+                    foreach (var p in parameters) countCmd.Parameters.Add(new SqlParameter(p.ParameterName, p.Value));
                     total = Convert.ToInt64(countCmd.ExecuteScalar());
                 }
 
@@ -102,13 +110,35 @@ SELECT
     o.ctgender,
     o.ctTel,
     o.ctnguon,
+    o.Creationdate,
     o.Amount,
     o.Amountthucban,
     o.DepositDeadline,
     u.username AS CreatedBy,
-    prod.Countries
+    prod.Countries,
+    statusCalc.Status,
+    cust.CountCustomers
 FROM [order] o
 LEFT JOIN users u ON u.id = o.userid
+OUTER APPLY (
+    SELECT SUM(ISNULL(p.Amount, 0)) AS TotalPaid
+    FROM payment p
+    WHERE p.OrderId = o.orderid
+) pay
+OUTER APPLY (
+    SELECT CASE
+        WHEN ISNULL(pay.TotalPaid, 0) = 0 THEN
+            CASE
+                WHEN o.DepositDeadline IS NOT NULL AND CONVERT(date, o.DepositDeadline) < CONVERT(date, GETDATE()) THEN 'CX'
+                ELSE 'OP'
+            END
+        WHEN ISNULL(o.Amountthucban, 0) > 0 AND ISNULL(pay.TotalPaid, 0) >= ISNULL(o.Amountthucban, 0) THEN 'FP'
+        ELSE 'BK'
+    END AS Status
+) statusCalc
+OUTER APPLY (
+    SELECT COUNT(*) AS CountCustomers FROM customer c0 WHERE c0.orderID = o.orderid AND c0.Visible = 1
+) cust
 OUTER APPLY (
     SELECT TOP 1 STUFF((
         SELECT DISTINCT ', ' + d.name
@@ -141,7 +171,10 @@ OFFSET @start ROWS FETCH NEXT @length ROWS ONLY OPTION (RECOMPILE);";
                             row["Phone"] = reader["ctTel"];
                             row["Source"] = reader["ctnguon"];
                             row["ProductName"] = reader["Countries"] as string;
+                            row["Status"] = reader["Status"] as string;
+                            row["CustomerCount"] = reader["CountCustomers"];
                             row["CreatedBy"] = NormalizeUsername(reader["CreatedBy"] as string);
+                            row["CreationDate"] = reader["Creationdate"] != DBNull.Value ? Convert.ToDateTime(reader["Creationdate"]).ToString("dd/MM/yyyy") : "";
                             row["Amount"] = reader["Amount"];
                             row["AmountThucBan"] = reader["Amountthucban"];
                             row["DepositDeadline"] = reader["DepositDeadline"] != DBNull.Value
