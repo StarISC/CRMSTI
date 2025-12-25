@@ -114,7 +114,7 @@
                 </div>
             </div>
             <div class="mb-3">
-                <div class="row g-2 align-items-end flex-nowrap">
+                <div class="row g-2 align-items-end flex-lg-nowrap">
                     <div class="col-md-2 col-lg-1">
                         <label class="form-label fw-semibold">Mã booking</label>
                         <asp:TextBox ID="txtOrderId" runat="server" CssClass="form-control" />
@@ -136,12 +136,6 @@
                         <asp:TextBox ID="txtSource" runat="server" CssClass="form-control" />
                     </div>
                     <div class="col-md-3">
-                        
-                    </div>
-                    <div class="col-md-3">
-                        
-                    </div>
-                    <div class="col-md-4 col-lg-3 d-flex align-items-end gap-2 ms-auto">
                         <asp:Button ID="btnFilter" runat="server" Text="Lọc" CssClass="btn btn-primary" />
                         <asp:Button ID="btnReset" runat="server" Text="Xóa lọc" CssClass="btn btn-outline-secondary" CausesValidation="false" />
                     </div>
