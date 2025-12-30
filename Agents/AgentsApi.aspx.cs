@@ -32,6 +32,7 @@ public partial class AgentsApi : System.Web.UI.Page
         string phone = (Request["phone"] ?? string.Empty).Trim();
         string type = (Request["type"] ?? string.Empty).Trim();
         string status = (Request["status"] ?? string.Empty).Trim();
+        int provinceId = ParseInt(Request["provinceId"], 0);
 
         var parameters = new List<SqlParameter>();
         var where = "WHERE 1=1";
@@ -55,6 +56,11 @@ public partial class AgentsApi : System.Web.UI.Page
         {
             where += " AND a.status = @status";
             parameters.Add(new SqlParameter("@status", status));
+        }
+        if (provinceId > 0)
+        {
+            where += " AND addr.province_id = @provinceId";
+            parameters.Add(new SqlParameter("@provinceId", provinceId));
         }
 
         long total = 0;
@@ -86,9 +92,17 @@ public partial class AgentsApi : System.Web.UI.Page
                 var sql = @"
 SELECT a.id, a.code, a.name, a.phone, a.email, a.agent_type, a.status,
        a.representative_name, a.commission_rate,
-       p.name AS ParentName
+       p.name AS ParentName,
+       pr.name AS ProvinceName
 FROM dbo.cf_agents a
 LEFT JOIN dbo.cf_agents p ON p.id = a.parent_agent_id
+OUTER APPLY (
+    SELECT TOP 1 aa.province_id
+    FROM dbo.cf_agent_addresses aa
+    WHERE aa.agent_id = a.id
+    ORDER BY aa.created_at DESC, aa.id DESC
+) addr
+LEFT JOIN dbo.cf_provinces pr ON pr.id = addr.province_id
 " + where + @"
 ORDER BY a.created_at DESC, a.id DESC
 OFFSET @start ROWS FETCH NEXT @length ROWS ONLY;";
@@ -115,6 +129,7 @@ OFFSET @start ROWS FETCH NEXT @length ROWS ONLY;";
                             row["ParentName"] = reader["ParentName"] as string;
                             row["RepresentativeName"] = reader["representative_name"] as string;
                             row["CommissionRate"] = reader["commission_rate"];
+                            row["ProvinceName"] = reader["ProvinceName"] as string;
                             data.Add(row);
                         }
                     }

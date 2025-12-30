@@ -5,7 +5,7 @@ public partial class Login : System.Web.UI.Page
 {
     protected void Page_Load(object sender, EventArgs e)
     {
-        if (!IsPostBack && User != null && User.Identity.IsAuthenticated)
+        if (!IsPostBack && User != null && User.Identity.IsAuthenticated && Session["UserId"] != null)
         {
             Response.Redirect("~/Dashboard/Default.aspx");
         }
@@ -31,7 +31,7 @@ public partial class Login : System.Web.UI.Page
             Session["Role"] = user.Role;
             bool persistent = chkRemember.Checked;
             FormsAuthentication.SetAuthCookie(user.Username, persistent);
-            FormsAuthentication.RedirectFromLoginPage(user.Username, persistent);
+            Response.Redirect("~/Dashboard/Default.aspx");
         }
         else
         {

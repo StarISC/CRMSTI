@@ -1,3 +1,4 @@
+﻿
 <%@ Page Language="C#" AutoEventWireup="true" CodeFile="AgentDetail.aspx.cs" Inherits="AgentDetail" MasterPageFile="~/Site.Master" %>
 <asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Chi tiết đại lý</asp:Content>
 <asp:Content ID="HeadContent" ContentPlaceHolderID="HeadContent" runat="server">
@@ -58,16 +59,6 @@
                         <div class="col-md-3"><div class="info-label">Công ty chủ quản</div><div id="dParent" class="info-value"></div></div>
                         <div class="col-md-6"><div class="info-label">Địa chỉ</div><div id="dAddress" class="info-value"></div></div>
                         <div class="col-md-12"><div class="info-label">Ghi chú</div><div id="dNote" class="info-value"></div></div>
-                    </div>
-
-                    <div class="section-title mt-3">Hợp đồng &amp; Giấy phép</div>
-                    <div class="row g-3">
-                        <div class="col-md-4"><div class="info-label">Số hợp đồng</div><div id="dContractNo" class="info-value"></div></div>
-                        <div class="col-md-4"><div class="info-label">Ngày hợp đồng</div><div id="dContractDate" class="info-value"></div></div>
-                        <div class="col-md-4"><div class="info-label">Hết hạn hợp đồng</div><div id="dContractExpiry" class="info-value"></div></div>
-                        <div class="col-md-4"><div class="info-label">Số giấy phép</div><div id="dLicenseNo" class="info-value"></div></div>
-                        <div class="col-md-4"><div class="info-label">Ngày cấp phép</div><div id="dLicenseDate" class="info-value"></div></div>
-                        <div class="col-md-4"><div class="info-label">Hết hạn giấy phép</div><div id="dLicenseExpiry" class="info-value"></div></div>
                     </div>
                 </div>
 
@@ -136,7 +127,6 @@
             </div>
         </div>
     </div>
-
     <div class="modal fade" id="agentUserModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -217,36 +207,36 @@
                             <input type="text" id="editEmail" class="form-control" />
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label fw-semibold">% hoa hồng</label>
+                            <input type="number" id="editCommission" class="form-control" min="0" step="0.01" />
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Mã số thuế</label>
                             <input type="text" id="editTaxCode" class="form-control" />
                         </div>
-                        <div class="col-md-8">
+                        <div class="col-md-6">
                             <label class="form-label fw-semibold">Địa chỉ thuế</label>
                             <input type="text" id="editTaxAddress" class="form-control" />
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Tỉnh/Thành</label>
                             <select id="editProvince" class="form-select">
                                 <option value="">-- Chọn tỉnh --</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Phường/Xã</label>
                             <select id="editWard" class="form-select">
                                 <option value="">-- Chọn phường --</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Số nhà</label>
                             <input type="text" id="editHouseNo" class="form-control" />
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Đường</label>
                             <input type="text" id="editStreet" class="form-control" />
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-semibold">% hoa hồng</label>
-                            <input type="number" id="editCommission" class="form-control" min="0" step="0.01" />
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">Người đại diện</label>
@@ -255,30 +245,6 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">SĐT đại diện</label>
                             <input type="text" id="editRepPhone" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Số hợp đồng</label>
-                            <input type="text" id="editContractNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày hợp đồng</label>
-                            <input type="date" id="editContractDate" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Hết hạn hợp đồng</label>
-                            <input type="date" id="editContractExpiry" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Số giấy phép</label>
-                            <input type="text" id="editLicenseNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày cấp phép</label>
-                            <input type="date" id="editLicenseDate" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Hết hạn giấy phép</label>
-                            <input type="date" id="editLicenseExpiry" class="form-control" />
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Ghi chú</label>
@@ -294,7 +260,6 @@
             </div>
         </div>
     </div>
-
     <script>
         var currentAgent = null;
 
@@ -329,7 +294,14 @@
                 $('#dCode').text(resp.Code || '');
                 $('#dName').text(resp.Name || '');
                 $('#dType').text(resp.AgentType || '');
-                $('#dStatus').text(resp.Status || '');
+                var statusKey = (resp.Status || '').toString().toUpperCase();
+                if (statusKey === 'INACTIVE') {
+                    $('#dStatus').html('<span class="tag-status tag-inactive">Tạm dừng</span>');
+                } else if (statusKey) {
+                    $('#dStatus').html('<span class="tag-status tag-active">Hoạt động</span>');
+                } else {
+                    $('#dStatus').text('');
+                }
                 $('#dPhone').text(resp.Phone || '');
                 $('#dEmail').text(resp.Email || '');
                 $('#dTaxCode').text(resp.TaxCode || '');
@@ -341,12 +313,6 @@
                 $('#dNote').text(resp.Note || '');
                 var addressText = resp.FullAddress || buildAddressLine(resp);
                 $('#dAddress').text(addressText);
-                $('#dContractNo').text(resp.ContractNo || '');
-                $('#dContractDate').text(resp.ContractDate || '');
-                $('#dContractExpiry').text(resp.ContractExpiry || '');
-                $('#dLicenseNo').text(resp.LicenseNo || '');
-                $('#dLicenseDate').text(resp.LicenseDate || '');
-                $('#dLicenseExpiry').text(resp.LicenseExpiry || '');
             });
         }
 
@@ -431,7 +397,6 @@
                 deleteUser(agentId, id);
             });
         }
-
         function setupEditAgent(agentId) {
             if (!isAdmin()) {
                 $('#btnEditAgent').hide();
@@ -464,12 +429,6 @@
             $('#editCommission').val((currentAgent.CommissionRate || '').toString().replace('%', '').trim());
             $('#editRepName').val(currentAgent.RepresentativeName || '');
             $('#editRepPhone').val(currentAgent.RepresentativePhone || '');
-            $('#editContractNo').val(currentAgent.ContractNo || '');
-            $('#editContractDate').val(toInputDate(currentAgent.ContractDate));
-            $('#editContractExpiry').val(toInputDate(currentAgent.ContractExpiry));
-            $('#editLicenseNo').val(currentAgent.LicenseNo || '');
-            $('#editLicenseDate').val(toInputDate(currentAgent.LicenseDate));
-            $('#editLicenseExpiry').val(toInputDate(currentAgent.LicenseExpiry));
             $('#editNote').val(currentAgent.Note || '');
             $('#editHouseNo').val(currentAgent.HouseNo || '');
             $('#editStreet').val(currentAgent.Street || '');
@@ -497,12 +456,12 @@
                 commissionRate: $('#editCommission').val(),
                 representativeName: $('#editRepName').val(),
                 representativePhone: $('#editRepPhone').val(),
-                contractNo: $('#editContractNo').val(),
-                contractDate: $('#editContractDate').val(),
-                contractExpiry: $('#editContractExpiry').val(),
-                licenseNo: $('#editLicenseNo').val(),
-                licenseDate: $('#editLicenseDate').val(),
-                licenseExpiry: $('#editLicenseExpiry').val(),
+                contractNo: '',
+                contractDate: '',
+                contractExpiry: '',
+                licenseNo: '',
+                licenseDate: '',
+                licenseExpiry: '',
                 note: $('#editNote').val()
             };
 
@@ -590,13 +549,6 @@
             if (resp.WardName) parts.push(resp.WardName);
             if (resp.ProvinceName) parts.push(resp.ProvinceName);
             return parts.join(', ');
-        }
-
-        function toInputDate(input) {
-            if (!input) return '';
-            var parts = input.split('/');
-            if (parts.length !== 3) return '';
-            return parts[2] + '-' + parts[1] + '-' + parts[0];
         }
 
         function openUserModal(user) {

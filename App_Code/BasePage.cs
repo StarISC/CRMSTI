@@ -25,6 +25,11 @@ public class BasePage : System.Web.UI.Page
 
         if (Session["UserId"] == null)
         {
+            if (User != null && User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                System.Web.Security.FormsAuthentication.SignOut();
+                Session.Abandon();
+            }
             Response.Redirect("~/Login.aspx");
             return;
         }

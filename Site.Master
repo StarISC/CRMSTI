@@ -1,4 +1,4 @@
-<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="SiteMaster" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="SiteMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -56,9 +56,22 @@
                                 <span class="label">Khách hàng</span>
                             </a>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="~/Customers/Customers.aspx" runat="server">Danh s&#225;ch contact</a></li>
-                                <li><a class="dropdown-item" href="~/Customers/CustomersTraveled.aspx" runat="server">Kh&#225;ch &#273;&#227; &#273;i tour</a></li>
+                                <li><a class="dropdown-item" href="~/Customers/Customers.aspx" runat="server">Danh sách contact</a></li>
+                                <li><a class="dropdown-item" href="~/Customers/CustomersTraveled.aspx" runat="server">Khách đã đi tour</a></li>
                                 <li><a class="dropdown-item" href="~/Bookings/Bookings.aspx" runat="server">Danh sách đặt chỗ</a></li>
+                            </ul>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a id="lnkReportsToggle" class="nav-link dropdown-toggle stacked d-flex flex-column align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" runat="server">
+                                <i class="bi bi-bar-chart-line nav-icon"></i>
+                                <span class="label">Báo cáo</span>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="~/Reports/SalesByStaff.aspx" runat="server">Theo nhân viên bán hàng</a></li>
+                                <li><a class="dropdown-item" href="~/Reports/SourceByCustomer.aspx" runat="server">Theo nguồn khách</a></li>
+                                <li><a class="dropdown-item" href="~/Reports/CountryByTour.aspx" runat="server">Theo quốc gia</a></li>
+                                <li><a class="dropdown-item" href="~/Reports/TimeByBooking.aspx" runat="server">Theo thời gian</a></li>
+                                <li><a class="dropdown-item" href="~/Reports/MarketingResult.aspx" runat="server">Kết quả marketing</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -96,6 +109,5 @@
             </div>
         </footer>
     </form>
-    
 </body>
 </html>

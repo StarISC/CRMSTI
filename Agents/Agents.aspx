@@ -60,10 +60,16 @@
                             <asp:ListItem Text="Tạm dừng" Value="INACTIVE" />
                         </asp:DropDownList>
                     </div>
+                    <div class="col-md-3 col-lg-2">
+                        <label class="form-label fw-semibold">Tỉnh</label>
+                        <select id="ddlProvince" class="form-select">
+                            <option value="">Tất cả</option>
+                        </select>
+                    </div>
                     <div class="col-md-3 col-lg-2 d-flex gap-2">
                         <asp:Button ID="btnFilter" runat="server" Text="Lọc" CssClass="btn btn-primary" />
                         <asp:Button ID="btnReset" runat="server" Text="Xóa lọc" CssClass="btn btn-outline-secondary" CausesValidation="false" />
-                        <asp:Button ID="btnAddAgent" runat="server" Text="Thêm đại lý" CssClass="btn btn-success" CausesValidation="false" />
+                        <asp:Button ID="btnAddAgent" runat="server" Text="+" CssClass="btn btn-success fw-bold px-3" CausesValidation="false" />
                     </div>
                 </div>
             </div>
@@ -75,8 +81,8 @@
                             <th>Tên đại lý</th>
                             <th>Loại</th>
                             <th>Điện thoại</th>
+                            <th>Tỉnh</th>
                             <th>Người đại diện</th>
-                            <th>% hoa hồng</th>
                             <th>Trạng thái</th>
                         </tr>
                     </thead>
@@ -132,23 +138,23 @@
                             <label class="form-label fw-semibold">Địa chỉ thuế</label>
                             <input type="text" id="agentTaxAddress" class="form-control" />
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Tỉnh/Thành</label>
                             <select id="agentProvince" class="form-select">
                                 <option value="">-- Chọn tỉnh --</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Phường/Xã</label>
                             <select id="agentWard" class="form-select">
                                 <option value="">-- Chọn phường --</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Số nhà</label>
                             <input type="text" id="agentHouseNo" class="form-control" />
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-12 col-md-3">
                             <label class="form-label fw-semibold">Đường</label>
                             <input type="text" id="agentStreet" class="form-control" />
                         </div>
@@ -169,50 +175,6 @@
                         <div class="col-md-6">
                             <label class="form-label fw-semibold">SĐT đại diện</label>
                             <input type="text" id="agentRepPhone" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Số hợp đồng</label>
-                            <input type="text" id="agentContractNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày hợp đồng</label>
-                            <input type="date" id="agentContractDate" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Hết hạn hợp đồng</label>
-                            <input type="date" id="agentContractExpiry" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Số giấy phép</label>
-                            <input type="text" id="agentLicenseNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày cấp phép</label>
-                            <input type="date" id="agentLicenseDate" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Hết hạn giấy phép</label>
-                            <input type="date" id="agentLicenseExpiry" class="form-control" />
-                        </div>
-                        <div class="col-md-12">
-                            <label class="form-label fw-semibold">Hồ sơ đính kèm (nhiều file)</label>
-                            <input type="file" id="agentFiles" class="form-control" multiple />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Loại hồ sơ</label>
-                            <select id="agentDocType" class="form-select">
-                                <option value="CONTRACT">Hợp đồng</option>
-                                <option value="LICENSE">Giấy phép</option>
-                                <option value="OTHER">Khác</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Số hồ sơ</label>
-                            <input type="text" id="agentDocNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Ngày hồ sơ</label>
-                            <input type="date" id="agentDocDate" class="form-control" />
                         </div>
                         <div class="col-md-12">
                             <label class="form-label fw-semibold">Ghi chú</label>
@@ -243,6 +205,7 @@
                         d.phone = $('#<%=txtPhone.ClientID%>').val();
                         d.type = $('#<%=ddlType.ClientID%>').val();
                         d.status = $('#<%=ddlStatus.ClientID%>').val();
+                        d.provinceId = $('#ddlProvince').val();
                     }
                 },
                 pageLength: 50,
@@ -260,11 +223,8 @@
                         return '<span class="' + cls + '">' + label + '</span>';
                     }},
                     { data: 'Phone' },
+                    { data: 'ProvinceName' },
                     { data: 'RepresentativeName' },
-                    { data: 'CommissionRate', render: function (data) {
-                        if (data === null || data === undefined || data === '') return '';
-                        return parseFloat(data).toLocaleString('vi-VN') + '%';
-                    }},
                     { data: 'Status', render: function (data) {
                         if (!data) return '';
                         var key = String(data).toUpperCase();
@@ -282,6 +242,7 @@
                 $('#<%=txtPhone.ClientID%>').val('');
                 $('#<%=ddlType.ClientID%>').val('');
                 $('#<%=ddlStatus.ClientID%>').val('');
+                $('#ddlProvince').val('');
                 table.ajax.reload();
             });
 
@@ -293,6 +254,8 @@
                 var modal = bootstrap.Modal.getOrCreateInstance(document.getElementById('agentCreateModal'));
                 modal.show();
             });
+
+            loadProvincesFilter();
 
             $('#btnSaveAgent').on('click', function () {
                 var payload = {
@@ -312,12 +275,12 @@
                     commissionRate: $('#agentCommission').val(),
                     representativeName: $('#agentRepName').val(),
                     representativePhone: $('#agentRepPhone').val(),
-                    contractNo: $('#agentContractNo').val(),
-                    contractDate: $('#agentContractDate').val(),
-                    contractExpiry: $('#agentContractExpiry').val(),
-                    licenseNo: $('#agentLicenseNo').val(),
-                    licenseDate: $('#agentLicenseDate').val(),
-                    licenseExpiry: $('#agentLicenseExpiry').val(),
+                    contractNo: '',
+                    contractDate: '',
+                    contractExpiry: '',
+                    licenseNo: '',
+                    licenseDate: '',
+                    licenseExpiry: '',
                     note: $('#agentNote').val()
                 };
 
@@ -331,17 +294,8 @@
                             $('#agentCreateError').text(resp.error).show();
                             return;
                         }
-                        var agentId = resp && resp.agentId ? resp.agentId : null;
-                        var files = $('#agentFiles')[0].files;
-                        if (agentId && files && files.length) {
-                            uploadAgentFiles(agentId, files, function () {
-                                bootstrap.Modal.getOrCreateInstance(document.getElementById('agentCreateModal')).hide();
-                                table.ajax.reload();
-                            });
-                        } else {
-                            bootstrap.Modal.getOrCreateInstance(document.getElementById('agentCreateModal')).hide();
-                            table.ajax.reload();
-                        }
+                        bootstrap.Modal.getOrCreateInstance(document.getElementById('agentCreateModal')).hide();
+                        table.ajax.reload();
                     },
                     error: function () {
                         $('#agentCreateError').text('Lỗi lưu đại lý').show();
@@ -391,6 +345,24 @@
             });
         }
 
+        function loadProvincesFilter() {
+            $.ajax({
+                url: 'ProvincesApi.aspx',
+                type: 'GET',
+                dataType: 'json',
+                success: function (resp) {
+                    var $province = $('#ddlProvince');
+                    $province.empty();
+                    $province.append('<option value="">Tất cả</option>');
+                    if (resp && resp.data && resp.data.length) {
+                        $.each(resp.data, function (i, p) {
+                            $province.append('<option value="' + p.Id + '">' + p.Name + '</option>');
+                        });
+                    }
+                }
+            });
+        }
+
         function loadWards(wardSelector, provinceId) {
             $.ajax({
                 url: 'WardsApi.aspx',
@@ -423,27 +395,6 @@
             return parts.join(', ');
         }
 
-        function uploadAgentFiles(agentId, files, done) {
-            var formData = new FormData();
-            formData.append('agentId', agentId);
-            formData.append('docType', $('#agentDocType').val());
-            formData.append('docNo', $('#agentDocNo').val());
-            formData.append('docDate', $('#agentDocDate').val());
-            for (var i = 0; i < files.length; i++) {
-                formData.append('files', files[i]);
-            }
-            $.ajax({
-                url: 'AgentsUploadApi.aspx',
-                type: 'POST',
-                data: formData,
-                contentType: false,
-                processData: false,
-                success: function () { if (done) done(); },
-                error: function () {
-                    $('#agentCreateError').text('Lỗi upload hồ sơ').show();
-                    if (done) done();
-                }
-            });
-        }
+        // upload hồ sơ đã bỏ khỏi form thêm đại lý
     </script>
 </asp:Content>
