@@ -5,6 +5,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Web;
 using System.Data.SqlClient;
+using System.Threading;
 using HtmlAgilityPack;
 
 public partial class Consulting_RawData : BasePage
@@ -42,6 +43,7 @@ public partial class Consulting_RawData : BasePage
             var province = (txtProvince.Text ?? string.Empty).Trim();
             var results = new List<RawContact>();
 
+            var rand = new Random();
             for (var page = pageFrom; page <= pageTo; page++)
             {
                 var pageUrl = BuildPageUrl(url, page);
@@ -49,6 +51,12 @@ public partial class Consulting_RawData : BasePage
                 var filePath = Path.Combine(folder, fileName);
                 DownloadToFile(pageUrl, filePath);
                 results.AddRange(ParseHtmlFile(filePath, pageUrl, province));
+
+                if (page < pageTo)
+                {
+                    // Throttle between requests to reduce server load.
+                    Thread.Sleep(rand.Next(5000, 10001));
+                }
             }
 
             EnrichPhones(results);
@@ -80,6 +88,7 @@ public partial class Consulting_RawData : BasePage
         request.Method = "GET";
         request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
         request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8";
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
         request.Headers.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
         request.Headers.Add("Cache-Control", "no-cache");
         request.Referer = url;
@@ -176,20 +185,35 @@ public partial class Consulting_RawData : BasePage
     private void EnrichPhones(List<RawContact> items)
     {
         if (items == null) return;
+        var rand = new Random();
         foreach (var item in items)
         {
             if (string.IsNullOrWhiteSpace(item.DetailUrl)) continue;
             if (!string.IsNullOrWhiteSpace(item.Phone)) continue;
             try
             {
-                var html = DownloadHtml(item.DetailUrl);
-                if (string.IsNullOrWhiteSpace(html)) continue;
-                item.Phone = ExtractPhoneFromDetail(html);
+                for (var attempt = 0; attempt < 2 && string.IsNullOrWhiteSpace(item.Phone); attempt++)
+                {
+                    var html = DownloadHtml(item.DetailUrl);
+                    if (string.IsNullOrWhiteSpace(html)) continue;
+                    SaveDetailHtml(item, html);
+                    var phone = ExtractPhoneFromDetail(html);
+                    if (!string.IsNullOrWhiteSpace(phone))
+                    {
+                        item.Phone = phone;
+                        break;
+                    }
+                    if (IsLikelyBlocked(html))
+                    {
+                        Thread.Sleep(rand.Next(5000, 10001));
+                    }
+                }
             }
             catch
             {
                 // Ignore per-item errors to keep batch running.
             }
+            Thread.Sleep(rand.Next(1000, 3001));
         }
     }
 
@@ -199,6 +223,7 @@ public partial class Consulting_RawData : BasePage
         request.Method = "GET";
         request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
         request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8";
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
         request.Headers.Add("Accept-Language", "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7");
         request.Headers.Add("Cache-Control", "no-cache");
         request.Referer = url;
@@ -215,6 +240,19 @@ public partial class Consulting_RawData : BasePage
     {
         var doc = new HtmlDocument();
         doc.LoadHtml(html);
+
+        var itempropTel = doc.DocumentNode.SelectSingleNode("//*[@itemprop='telephone']");
+        if (itempropTel != null)
+        {
+            var tel = itempropTel.GetAttributeValue("content", string.Empty);
+            if (string.IsNullOrWhiteSpace(tel))
+            {
+                var span = itempropTel.SelectSingleNode(".//span[contains(@class,'copy')]");
+                tel = span != null ? span.InnerText : itempropTel.InnerText;
+            }
+            tel = CleanPhone(tel);
+            if (!string.IsNullOrWhiteSpace(tel)) return tel;
+        }
 
         var telNode = doc.DocumentNode.SelectSingleNode("//a[starts-with(@href,'tel:')]");
         if (telNode != null)
@@ -241,6 +279,43 @@ public partial class Consulting_RawData : BasePage
         }
 
         return string.Empty;
+    }
+
+    private bool IsLikelyBlocked(string html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return true;
+        return html.IndexOf("table-taxinfo", StringComparison.OrdinalIgnoreCase) < 0
+            && html.IndexOf("itemprop='taxID'", StringComparison.OrdinalIgnoreCase) < 0
+            && html.IndexOf("itemprop=\"taxID\"", StringComparison.OrdinalIgnoreCase) < 0;
+    }
+
+    private void SaveDetailHtml(RawContact item, string html)
+    {
+        if (item == null || string.IsNullOrWhiteSpace(html)) return;
+        var folder = Server.MapPath("~/App_Data/RawData/Detail");
+        if (!Directory.Exists(folder))
+        {
+            Directory.CreateDirectory(folder);
+        }
+
+        var key = item.TaxCode;
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            key = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        }
+        var fileName = "detail_" + SanitizeFileName(key) + ".html";
+        var filePath = Path.Combine(folder, fileName);
+        File.WriteAllText(filePath, html, Encoding.UTF8);
+    }
+
+    private string SanitizeFileName(string input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return "unknown";
+        foreach (var ch in Path.GetInvalidFileNameChars())
+        {
+            input = input.Replace(ch, '_');
+        }
+        return input;
     }
 
     private void EnsureRawContactsTable()
