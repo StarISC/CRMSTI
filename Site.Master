@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="SiteMaster" %>
+<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="SiteMaster" %>
 <!DOCTYPE html>
 <html>
 <head runat="server">
@@ -72,6 +72,7 @@
                                 <li><a class="dropdown-item" href="~/Reports/CountryByTour.aspx" runat="server">Theo quốc gia</a></li>
                                 <li><a class="dropdown-item" href="~/Reports/TimeByBooking.aspx" runat="server">Theo thời gian</a></li>
                                 <li><a class="dropdown-item" href="~/Reports/MarketingResult.aspx" runat="server">Kết quả marketing</a></li>
+                                <li><a class="dropdown-item" href="~/Reports/MonthlyReport.aspx" runat="server">Báo cáo hàng tháng</a></li>
                             </ul>
                         </li>
                         <li class="nav-item dropdown">
@@ -85,11 +86,15 @@
                                 <li><a class="dropdown-item" href="~/Agents/AgentCare.aspx" runat="server">Lịch sử chăm sóc</a></li>
                             </ul>
                         </li>
-                        <li class="nav-item">
-                            <a id="lnkConsulting" class="nav-link stacked d-flex flex-column align-items-center" href="#" runat="server">
+                        <li class="nav-item dropdown">
+                            <a id="lnkConsulting" class="nav-link dropdown-toggle stacked d-flex flex-column align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" runat="server">
                                 <i class="bi bi-headset nav-icon"></i>
                                 <span class="label">Đang tư vấn</span>
                             </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="~/Consulting/DailyCustomerReport.aspx" runat="server">Báo cáo khách hàng ngày</a></li>
+                                <li><a class="dropdown-item" href="~/Consulting/RawData.aspx" runat="server">Dữ liệu thô</a></li>
+                            </ul>
                         </li>
                     </ul>
                     <div class="d-flex align-items-center gap-3 text-light">

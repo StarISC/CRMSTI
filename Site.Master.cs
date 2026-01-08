@@ -8,6 +8,7 @@ public partial class SiteMaster : MasterPage
 {
     private const string DashboardClass = "nav-link stacked d-flex flex-column align-items-center";
     private const string CustomersClass = "nav-link dropdown-toggle stacked d-flex flex-column align-items-center";
+    private const string ReportsClass = "nav-link dropdown-toggle stacked d-flex flex-column align-items-center";
     private const string AgentsClass = "nav-link dropdown-toggle stacked d-flex flex-column align-items-center";
     private const string ConsultingClass = "nav-link stacked d-flex flex-column align-items-center";
 
@@ -34,6 +35,10 @@ public partial class SiteMaster : MasterPage
         {
             SetActive(lnkCustomersToggle, CustomersClass);
         }
+        else if (path.Contains("/reports/"))
+        {
+            SetActive(lnkReportsToggle, ReportsClass);
+        }
         else if (path.Contains("/agents/"))
         {
             SetActive(lnkAgentsToggle, AgentsClass);
@@ -58,6 +63,11 @@ public partial class SiteMaster : MasterPage
         if (lnkCustomersToggle != null)
         {
             lnkCustomersToggle.Attributes["class"] = CustomersClass;
+        }
+
+        if (lnkReportsToggle != null)
+        {
+            lnkReportsToggle.Attributes["class"] = ReportsClass;
         }
 
         if (lnkAgentsToggle != null)

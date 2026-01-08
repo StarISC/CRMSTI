@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Web;
@@ -21,10 +21,11 @@ public partial class CustomersTraveledDetailApi : System.Web.UI.Page
         Response.Buffer = true;
         Response.Charset = "utf-8";
 
-        string passport = (Request["passport"] ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(passport))
+        string customerName = (Request["customerName"] ?? string.Empty).Trim();
+        string birthday = (Request["birthday"] ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(customerName))
         {
-            WriteJson(new { error = "Thiếu passport" });
+            WriteJson(new { error = "Thiếu thông tin khách hàng" });
             return;
         }
 
@@ -45,39 +46,44 @@ public partial class CustomersTraveledDetailApi : System.Web.UI.Page
     FROM customer c
     LEFT JOIN [order] o ON o.OrderID = c.orderID
     WHERE c.visible = 1
-      AND LTRIM(RTRIM(c.passport)) = @passport
+),
+filtered AS (
+    SELECT *,
+           LOWER(LTRIM(RTRIM(ISNULL(LastName,''))) + ' ' + LTRIM(RTRIM(ISNULL(Firstname,'')))) AS NameKey,
+           ISNULL(LTRIM(RTRIM(birthday)), '') AS BirthdayKey
+    FROM base
 ),
 latest_contact AS (
     SELECT *,
-           ROW_NUMBER() OVER (PARTITION BY Passport ORDER BY Creationdate DESC) AS rn
-    FROM base
+           ROW_NUMBER() OVER (PARTITION BY NameKey, BirthdayKey ORDER BY Creationdate DESC) AS rn
+    FROM filtered
 ),
 trip_counts AS (
-    SELECT Passport, COUNT(*) AS TripCount
-    FROM base
-    GROUP BY Passport
+    SELECT NameKey, BirthdayKey, COUNT(*) AS TripCount
+    FROM filtered
+    GROUP BY NameKey, BirthdayKey
 ),
 latest_tour AS (
-    SELECT b.Passport,
+    SELECT f.NameKey, f.BirthdayKey,
            p.ngayKhoiHanh AS LatestDeparture,
            p.code AS LatestCode,
-           ROW_NUMBER() OVER (PARTITION BY b.Passport ORDER BY p.ngayKhoiHanh DESC, b.Creationdate DESC) AS rn
-    FROM base b
-    JOIN product p ON p.id = b.ProductID
+           ROW_NUMBER() OVER (PARTITION BY f.NameKey, f.BirthdayKey ORDER BY p.ngayKhoiHanh DESC, f.Creationdate DESC) AS rn
+    FROM filtered f
+    JOIN product p ON p.id = f.ProductID
     WHERE p.ngayKhoiHanh IS NOT NULL
 ),
 countries AS (
-    SELECT b.Passport,
+    SELECT f.NameKey, f.BirthdayKey,
            STUFF((
                SELECT DISTINCT ', ' + d.name
-               FROM base b2
-               JOIN [product-des] pd ON pd.productID = b2.ProductID
+               FROM filtered f2
+               JOIN [product-des] pd ON pd.productID = f2.ProductID
                JOIN destination d ON d.id = pd.destinationID
-               WHERE b2.Passport = b.Passport AND ISNULL(d.name,'') <> ''
+               WHERE f2.NameKey = f.NameKey AND f2.BirthdayKey = f.BirthdayKey AND ISNULL(d.name,'') <> ''
                FOR XML PATH(''), TYPE
            ).value('.', 'nvarchar(max)'), 1, 2, '') AS Countries
-    FROM base b
-    GROUP BY b.Passport
+    FROM filtered f
+    GROUP BY f.NameKey, f.BirthdayKey
 )
 SELECT 
     l.Passport,
@@ -91,16 +97,22 @@ SELECT
     lt.LatestCode,
     cn.Countries
 FROM latest_contact l
-LEFT JOIN trip_counts tc ON tc.Passport = l.Passport
-LEFT JOIN latest_tour lt ON lt.Passport = l.Passport AND lt.rn = 1
-LEFT JOIN countries cn ON cn.Passport = l.Passport
-WHERE l.rn = 1;";
+LEFT JOIN trip_counts tc ON tc.NameKey = l.NameKey AND tc.BirthdayKey = l.BirthdayKey
+LEFT JOIN latest_tour lt ON lt.NameKey = l.NameKey AND lt.BirthdayKey = l.BirthdayKey AND lt.rn = 1
+LEFT JOIN countries cn ON cn.NameKey = l.NameKey AND cn.BirthdayKey = l.BirthdayKey
+WHERE l.rn = 1
+  AND l.NameKey = @nameKey
+  AND l.BirthdayKey = @birthdayKey;";
+
+            var nameKey = customerName.Trim().ToLowerInvariant();
+            var birthdayKey = birthday ?? string.Empty;
 
             using (var conn = Db.CreateConnection())
             using (var cmd = new SqlCommand(infoSql, conn))
             {
                 cmd.CommandTimeout = Db.CommandTimeoutSeconds;
-                cmd.Parameters.Add(new SqlParameter("@passport", passport));
+                cmd.Parameters.Add(new SqlParameter("@nameKey", nameKey));
+                cmd.Parameters.Add(new SqlParameter("@birthdayKey", birthdayKey));
                 conn.Open();
                 using (var reader = cmd.ExecuteReader())
                 {
@@ -150,7 +162,8 @@ OUTER APPLY (
         FROM customer c2
         JOIN [product-des] pd ON pd.productID = c2.ProductID
         JOIN destination d ON d.id = pd.destinationID
-        WHERE LTRIM(RTRIM(c2.passport)) = LTRIM(RTRIM(c.passport))
+        WHERE LOWER(LTRIM(RTRIM(ISNULL(c2.LastName,''))) + ' ' + LTRIM(RTRIM(ISNULL(c2.Firstname,'')))) = @nameKey
+          AND ISNULL(LTRIM(RTRIM(c2.birthday)), '') = @birthdayKey
           AND c2.ProductID = p.id
           AND ISNULL(d.name,'') <> ''
         FOR XML PATH(''), TYPE
@@ -158,14 +171,16 @@ OUTER APPLY (
 ) countries
 WHERE c.visible = 1
   AND o.Visible = 1
-  AND LTRIM(RTRIM(c.passport)) = @passport
+  AND LOWER(LTRIM(RTRIM(ISNULL(c.LastName,''))) + ' ' + LTRIM(RTRIM(ISNULL(c.Firstname,'')))) = @nameKey
+  AND ISNULL(LTRIM(RTRIM(c.birthday)), '') = @birthdayKey
 ORDER BY p.ngayKhoiHanh DESC, p.id DESC;";
 
             using (var conn = Db.CreateConnection())
             using (var cmd = new SqlCommand(sql, conn))
             {
                 cmd.CommandTimeout = Db.CommandTimeoutSeconds;
-                cmd.Parameters.Add(new SqlParameter("@passport", passport));
+                cmd.Parameters.Add(new SqlParameter("@nameKey", nameKey));
+                cmd.Parameters.Add(new SqlParameter("@birthdayKey", birthdayKey));
                 conn.Open();
                 using (var reader = cmd.ExecuteReader())
                 {

@@ -1,5 +1,5 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="CustomersTraveled.aspx.cs" Inherits="CustomersTraveled" MasterPageFile="~/Site.Master" %>
-<asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Kh&#225;ch &#273;&#227; &#273;i tour</asp:Content>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="CustomersTraveled.aspx.cs" Inherits="CustomersTraveled" MasterPageFile="~/Site.Master" %>
+<asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Khách đã đi tour</asp:Content>
 <asp:Content ID="HeadContent" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
         th {
@@ -37,6 +37,17 @@
             font-weight: 600;
             margin: 2px 4px 2px 0;
             border: 1px solid #dbe4ff;
+            font-size: 12px;
+        }
+        .tag-passport {
+            display: inline-block;
+            background: #f3f4f6;
+            color: #111827;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+            margin: 2px 4px 2px 0;
+            border: 1px solid #e5e7eb;
             font-size: 12px;
         }
         .tag-phone {
@@ -96,28 +107,28 @@
         <div class="card-body">
             <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center mb-3">
                 <div>
-                    <h2 class="h4 mb-1 text-primary">Kh&#225;ch &#273;&#227; &#273;i tour</h2>
-                    <div class="text-muted">Danh s&#225;ch kh&#225;ch h&#224;ng tr&#249;ng passport &#273;&#227; &#273;&#432;&#7907;c g&#7897;p l&#7841;i</div>
+                    <h2 class="h4 mb-1 text-primary">Khách đã đi tour</h2>
+                    <div class="text-muted">Danh sách khách hàng được gộp theo họ tên và ngày sinh</div>
                 </div>
             </div>
             <div class="mb-3">
-                <div class="row g-3 align-items-end flex-nowrap">
-                    <div class="col-md-2">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
                         <label class="form-label fw-semibold">Passport</label>
                         <input id="txtPassport" class="form-control" />
                     </div>
-                    <div class="col-md-3">
-                        <label class="form-label fw-semibold">H&#7885; v&#224; t&#234;n</label>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">Họ và tên</label>
                         <input id="txtName" class="form-control" />
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-semibold">&#272;i&#7879;n tho&#7841;i</label>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Điện thoại</label>
                         <input id="txtPhone" class="form-control" />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label fw-semibold">Th&#225;ng sinh</label>
+                        <label class="form-label fw-semibold">Tháng sinh</label>
                         <select id="ddlBirthMonth" class="form-select">
-                            <option value="">T&#7845;t c&#7843;</option>
+                            <option value="">Tất cả</option>
                             <option value="1">1</option>
                             <option value="2">2</option>
                             <option value="3">3</option>
@@ -132,29 +143,50 @@
                             <option value="12">12</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex gap-2 justify-content-end flex-nowrap">
-                        <button id="btnFilter" class="btn btn-primary" type="button">L&#7885;c</button>
-                        <button id="btnReset" class="btn btn-outline-secondary" type="button">X&#243;a l&#7885;c</button>
+                </div>
+                <div class="row g-3 align-items-end mt-0">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Từ ngày</label>
+                        <input id="txtFromDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Đến ngày</label>
+                        <input id="txtToDate" type="date" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Số lần đi từ</label>
+                        <input id="txtTripFrom" type="number" min="1" class="form-control" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Đến</label>
+                        <input id="txtTripTo" type="number" min="1" class="form-control" />
+                    </div>
+                    <div class="col-12 d-flex gap-2 justify-content-end flex-nowrap">
+                        <button id="btnFilter" class="btn btn-primary" type="button">Lọc</button>
+                        <button id="btnReset" class="btn btn-outline-secondary" type="button">Xóa lọc</button>
+                        <a id="btnExport" runat="server" class="btn btn-success btn-sm" title="Export Excel" href="#">
+                            <i class="bi bi-file-earmark-excel"></i>
+                        </a>
                     </div>
                 </div>
             </div>
             <div class="mb-2 small text-muted">
-                Ghi ch&#250;:
-                <span class="tag-phone">S&#7889; kh&#225;ch h&#224;ng &#273;&#432;&#7907;c cung c&#7845;p</span>
-                <span class="tag-phone tag-phone-external">S&#7889; ng&#432;&#7901;i &#273;&#7863;t tour</span>
+                Ghi chú:
+                <span class="tag-phone">Số khách hàng được cung cấp</span>
+                <span class="tag-phone tag-phone-external">Số người đặt tour</span>
             </div>
             <div class="table-responsive">
                 <table id="traveledTable" class="table table-striped table-hover align-middle mb-0" style="width:100%">
                     <thead class="table-light">
                         <tr>
                             <th>Passport</th>
-                            <th>Kh&#225;ch h&#224;ng</th>
-                            <th>Gi&#7899;i t&#237;nh</th>
-                            <th>Ng&#224;y sinh</th>
-                            <th>&#272;i&#7879;n tho&#7841;i</th>
-                            <th>&#272;&#227; &#273;i &#273;&#7871;n</th>
-                            <th>S&#7889; l&#7847;n &#273;i</th>
-                            <th>L&#7847;n &#273;i g&#7847;n nh&#7845;t</th>
+                            <th>Khách hàng</th>
+                            <th>Giới tính</th>
+                            <th>Ngày sinh</th>
+                            <th>Điện thoại</th>
+                            <th>Đã đi đến</th>
+                            <th>Số lần đi</th>
+                            <th>Lần đi gần nhất</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -180,10 +212,14 @@
                         d.customerName = $('#txtName').val();
                         d.phone = $('#txtPhone').val();
                         d.birthMonth = $('#ddlBirthMonth').val();
+                        d.fromDate = $('#txtFromDate').val();
+                        d.toDate = $('#txtToDate').val();
+                        d.tripFrom = $('#txtTripFrom').val();
+                        d.tripTo = $('#txtTripTo').val();
                     },
                     dataSrc: function (json) {
                         if (json.error) {
-                            alert('L&#7895;i t&#7843;i d&#7919; li&#7879;u: ' + json.error);
+                            alert('Lỗi tải dữ liệu: ' + json.error);
                             return [];
                         }
                         return json.data;
@@ -192,12 +228,19 @@
                 pageLength: 50,
                 lengthMenu: [[20, 30, 50, 100, 200], [20, 30, 50, 100, 200]],
                 columns: [
-                    { data: 'Passport', className: 'nowrap', defaultContent: '', render: function (data) {
+                    { data: 'Passports', defaultContent: '', render: function (data) {
                         if (!data) return '';
-                        var safe = $('<div/>').text(data).html();
-                        return '<a href="#" class="passport-link" data-passport="' + safe + '">' + safe + '</a>';
+                        var items = data.split(';').map(function (x) { return x.trim(); }).filter(Boolean);
+                        return items.map(function (x, i) {
+                            var prefix = (i > 0 && i % 2 === 0) ? '<br>' : '';
+                            return prefix + '<span class="tag-passport">' + $('<div/>').text(x).html() + '</span>';
+                        }).join('');
                     } },
-                    { data: 'CustomerName', defaultContent: '' },
+                    { data: null, className: 'nowrap', defaultContent: '', render: function (data, type, row) {
+                        var name = row.CustomerName ? $('<div/>').text(row.CustomerName).html() : '';
+                        var birthday = row.Birthday ? $('<div/>').text(row.Birthday).html() : '';
+                        return '<a href="#" class="customer-link" data-name="' + name + '" data-birthday="' + birthday + '">' + name + '</a>';
+                    } },
                     { data: 'Gender', defaultContent: '' },
                     { data: 'Birthday', className: 'nowrap', defaultContent: '' },
                     { data: 'Phone', defaultContent: '', render: function (data) {
@@ -214,7 +257,7 @@
                     { data: 'Countries', defaultContent: '', render: function (data) {
                         if (!data) return '';
                         return data.split(',').map(function (x) { return x.trim(); }).filter(Boolean)
-                            .map(function (x) { return '<span class=\"tag-country\">' + $('<div/>').text(x).html() + '</span>'; }).join('');
+                            .map(function (x) { return '<span class="tag-country">' + $('<div/>').text(x).html() + '</span>'; }).join('');
                     } },
                     { data: 'TripCount', className: 'nowrap', defaultContent: '0' },
                     { data: null, className: 'nowrap', defaultContent: '', render: function (data, type, row) {
@@ -230,10 +273,11 @@
             table.on('processing.dt', function (e, settings, processing) {
                 $('#traveledLoading').css('display', processing ? 'flex' : 'none');
             });
-            $('#traveledTable').on('click', '.passport-link', function (e) {
+            $('#traveledTable').on('click', '.customer-link', function (e) {
                 e.preventDefault();
-                var passport = $(this).data('passport');
-                loadPassportTours(passport);
+                var name = $(this).data('name') || '';
+                var birthday = $(this).data('birthday') || '';
+                loadPassportTours(name, birthday);
             });
             $('#btnFilter').on('click', function () { table.ajax.reload(); });
             $('#btnReset').on('click', function () {
@@ -241,7 +285,24 @@
                 $('#txtName').val('');
                 $('#txtPhone').val('');
                 $('#ddlBirthMonth').val('');
+                $('#txtFromDate').val('');
+                $('#txtToDate').val('');
+                $('#txtTripFrom').val('');
+                $('#txtTripTo').val('');
                 table.ajax.reload();
+            });
+            $('#<%=btnExport.ClientID%>').on('click', function (e) {
+                e.preventDefault();
+                var url = 'CustomersTraveledExport.aspx?'
+                    + 'passport=' + encodeURIComponent($('#txtPassport').val() || '')
+                    + '&customerName=' + encodeURIComponent($('#txtName').val() || '')
+                    + '&phone=' + encodeURIComponent($('#txtPhone').val() || '')
+                    + '&birthMonth=' + encodeURIComponent($('#ddlBirthMonth').val() || '')
+                    + '&fromDate=' + encodeURIComponent($('#txtFromDate').val() || '')
+                    + '&toDate=' + encodeURIComponent($('#txtToDate').val() || '')
+                    + '&tripFrom=' + encodeURIComponent($('#txtTripFrom').val() || '')
+                    + '&tripTo=' + encodeURIComponent($('#txtTripTo').val() || '');
+                window.location.href = url;
             });
         });
     </script>
@@ -250,7 +311,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">L&#7883;ch s&#7917; tour &#273;&#227; &#273;i</h5>
+                    <h5 class="modal-title">Lịch sử tour đã đi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -258,7 +319,7 @@
                         <div class="spinner-border text-primary" role="status"></div>
                     </div>
                     <div id="passportToursContent" style="display:none;">
-                        <div class="mb-2 text-muted">Passport: <span id="passportLabel"></span></div>
+                        <div class="mb-2 text-muted">Khách hàng: <span id="passportLabel"></span></div>
                         <div id="passportToursInfo" class="mb-2"></div>
                         <div class="table-responsive">
                             <table class="table table-sm table-striped align-middle mb-0">
@@ -267,9 +328,9 @@
                                         <th>TT</th>
                                         <th>Code</th>
                                         <th>Ship</th>
-                                        <th>Ng&#224;y KH</th>
-                                        <th>Qu&#7889;c gia</th>
-                                        <th>&#272;&#7863;t b&#7903;i</th>
+                                        <th>Ngày KH</th>
+                                        <th>Quốc gia</th>
+                                        <th>Đặt bởi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="passportToursBody"></tbody>
@@ -283,44 +344,44 @@
     </div>
 
     <script>
-        function loadPassportTours(passport) {
+        function loadPassportTours(name, birthday) {
             var modalEl = document.getElementById('passportToursModal');
             var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             $('#passportToursError').hide();
             $('#passportToursContent').hide();
             $('#passportToursBody').empty();
             $('#passportToursLoading').show();
-            $('#passportLabel').text(passport || '');
+            $('#passportLabel').text(name || '');
             modal.show();
             $.ajax({
                 url: 'CustomersTraveledDetailApi.aspx',
                 type: 'GET',
                 dataType: 'json',
-                data: { passport: passport },
+                data: { customerName: name, birthday: birthday },
                 success: function (resp) {
                     if (resp && resp.error) {
                         $('#passportToursError').text(resp.error).show();
                         return;
                     }
                     if (resp) {
-                        $('#passportLabel').text(resp.Passport || passport || '');
+                        $('#passportLabel').text(resp.CustomerName || name || '');
                         var infoHtml = '';
                         if (resp.CustomerName || resp.Phone || resp.Gender || resp.Birthday || resp.TripCount || resp.LatestDeparture || resp.LatestCode || resp.Countries) {
                             var countries = resp.Countries ? resp.Countries.split(',').map(function (x) { return x.trim(); }).filter(Boolean)
                                 .map(function (x) { return '<span class="tag-country">' + $('<div/>').text(x).html() + '</span>'; }).join('') : '';
-                            var latestTour = (resp.LatestDeparture || '') + (resp.LatestCode ? '<br><div class=\"tag-code\">' + $('<div/>').text(resp.LatestCode).html() + '</div>' : '');
+                            var latestTour = (resp.LatestDeparture || '') + (resp.LatestCode ? '<br><div class="tag-code">' + $('<div/>').text(resp.LatestCode).html() + '</div>' : '');
                             infoHtml = ''
-                                + '<div class=\"row g-2 mb-2\">'
-                                + '<div class=\"col-md-4\"><div class=\"fw-semibold\">H&#7885; t&#234;n</div><div>' + (resp.CustomerName || '') + '</div></div>'
-                                + '<div class=\"col-md-4\"><div class=\"fw-semibold\">Gi&#7899;i t&#237;nh</div><div>' + (resp.Gender || '') + '</div></div>'
-                                + '<div class=\"col-md-4\"><div class=\"fw-semibold\">Ng&#224;y sinh</div><div>' + (resp.Birthday || '') + '</div></div>'
+                                + '<div class="row g-2 mb-2">'
+                                + '<div class="col-md-4"><div class="fw-semibold">Họ tên</div><div>' + (resp.CustomerName || '') + '</div></div>'
+                                + '<div class="col-md-4"><div class="fw-semibold">Giới tính</div><div>' + (resp.Gender || '') + '</div></div>'
+                                + '<div class="col-md-4"><div class="fw-semibold">Ngày sinh</div><div>' + (resp.Birthday || '') + '</div></div>'
                                 + '</div>'
-                                + '<div class=\"row g-2 mb-2\">'
-                                + '<div class=\"col-md-4\"><div class=\"fw-semibold\">&#272;i&#7879;n tho&#7841;i</div><div>' + (resp.Phone || '') + '</div></div>'
-                                + '<div class=\"col-md-4\"><div class=\"fw-semibold\">S&#7889; l&#7847;n &#273;i</div><div>' + (resp.TripCount || '0') + '</div></div>'
-                                + '<div class=\"col-md-4\"><div class=\"fw-semibold\">L&#7847;n &#273;i g&#7847;n nh&#7845;t</div><div>' + latestTour + '</div></div>'
+                                + '<div class="row g-2 mb-2">'
+                                + '<div class="col-md-4"><div class="fw-semibold">Điện thoại</div><div>' + (resp.Phone || '') + '</div></div>'
+                                + '<div class="col-md-4"><div class="fw-semibold">Số lần đi</div><div>' + (resp.TripCount || '0') + '</div></div>'
+                                + '<div class="col-md-4"><div class="fw-semibold">Lần đi gần nhất</div><div>' + latestTour + '</div></div>'
                                 + '</div>'
-                                + '<div class=\"mb-2\"><div class=\"fw-semibold\">Qu&#7889;c gia &#273;&#227; &#273;i</div><div>' + countries + '</div></div>';
+                                + '<div class="mb-2"><div class="fw-semibold">Quốc gia đã đi</div><div>' + countries + '</div></div>';
                         }
                         $('#passportToursInfo').html(infoHtml);
                     }
@@ -330,7 +391,7 @@
                             var countries = row.Countries ? row.Countries.split(',').map(function (x) { return x.trim(); }).filter(Boolean)
                                 .map(function (x) { return '<span class="tag-country">' + $('<div/>').text(x).html() + '</span>'; }).join('') : '';
                             var statusBadge = row.Status ? '<span class="tag-status tag-status-' + row.Status + '">' + $('<div/>').text(row.Status).html() + '</span>' : '';
-                            var booker = (row.Phone || '') + '<br><small class=\"text-muted\">' + (row.CreatedBy || '') + '</small>';
+                            var booker = (row.Phone || '') + '<br><small class="text-muted">' + (row.CreatedBy || '') + '</small>';
                             rows += '<tr>'
                                 + '<td>' + statusBadge + '</td>'
                                 + '<td>' + (row.Code || '') + '</td>'
@@ -341,13 +402,13 @@
                                 + '</tr>';
                         });
                     } else {
-                        rows = '<tr><td colspan="6" class="text-center text-muted">Ch&#432;a c&#243; d&#7919; li&#7879;u</td></tr>';
+                        rows = '<tr><td colspan="6" class="text-center text-muted">Chưa có dữ liệu</td></tr>';
                     }
                     $('#passportToursBody').html(rows);
                     $('#passportToursContent').show();
                 },
                 error: function () {
-                    $('#passportToursError').text('L&#7895;i t&#7843;i chi ti&#7871;t tour').show();
+                    $('#passportToursError').text('Lỗi tải chi tiết tour').show();
                 },
                 complete: function () {
                     $('#passportToursLoading').hide();

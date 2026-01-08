@@ -32,7 +32,8 @@ public partial class BookingsApi : System.Web.UI.Page
         string customerName = (Request["customerName"] ?? string.Empty).Trim();
         string phone = (Request["phone"] ?? string.Empty).Trim();
         string source = (Request["source"] ?? string.Empty).Trim();
-        string bookingDate = (Request["bookingDate"] ?? string.Empty).Trim();
+        string fromDate = (Request["fromDate"] ?? string.Empty).Trim();
+        string toDate = (Request["toDate"] ?? string.Empty).Trim();
         bool sortByAmount = Request["sort"] == "amount";
 
         var excludeNames = new[] { "tour leader", "first name", "star travel", "summer uyen" };
@@ -64,11 +65,17 @@ public partial class BookingsApi : System.Web.UI.Page
             where += " AND o.ctnguon LIKE @source";
             parameters.Add(new SqlParameter("@source", "%" + source + "%"));
         }
-        DateTime bookingDt;
-        if (DateTime.TryParse(bookingDate, out bookingDt))
+        DateTime fromDt;
+        if (DateTime.TryParse(fromDate, out fromDt))
         {
-            where += " AND CONVERT(date, o.DepositDeadline) = @bookingDate";
-            parameters.Add(new SqlParameter("@bookingDate", bookingDt.Date));
+            where += " AND o.Creationdate >= @fromDate";
+            parameters.Add(new SqlParameter("@fromDate", fromDt.Date));
+        }
+        DateTime toDt;
+        if (DateTime.TryParse(toDate, out toDt))
+        {
+            where += " AND o.Creationdate < @toDate";
+            parameters.Add(new SqlParameter("@toDate", toDt.Date.AddDays(1)));
         }
 
         long total = 0;
@@ -111,11 +118,13 @@ SELECT
     o.ctTel,
     o.ctnguon,
     o.Creationdate,
+    tourcode.TourCode,
     o.Amount,
     o.Amountthucban,
     o.DepositDeadline,
     u.username AS CreatedBy,
     prod.Countries,
+    tour.DepartureDate,
     statusCalc.Status,
     cust.CountCustomers
 FROM [order] o
@@ -139,6 +148,19 @@ OUTER APPLY (
 OUTER APPLY (
     SELECT COUNT(*) AS CountCustomers FROM customer c0 WHERE c0.orderID = o.orderid AND c0.Visible = 1
 ) cust
+OUTER APPLY (
+    SELECT TOP 1 p.Code AS TourCode
+    FROM customer c2
+    INNER JOIN product p ON p.id = c2.ProductID
+    WHERE c2.orderID = o.orderid AND c2.Visible = 1 AND ISNULL(p.Code, '') <> ''
+    ORDER BY c2.Creationdate DESC, c2.Id DESC
+) tourcode
+OUTER APPLY (
+    SELECT MIN(p.ngaydi) AS DepartureDate
+    FROM customer c1
+    LEFT JOIN price p ON p.id = c1.IDPrice
+    WHERE c1.orderID = o.orderid AND c1.Visible = 1
+) tour
 OUTER APPLY (
     SELECT TOP 1 STUFF((
         SELECT DISTINCT ', ' + d.name
@@ -171,10 +193,16 @@ OFFSET @start ROWS FETCH NEXT @length ROWS ONLY OPTION (RECOMPILE);";
                             row["Phone"] = reader["ctTel"];
                             row["Source"] = reader["ctnguon"];
                             row["ProductName"] = reader["Countries"] as string;
+                            row["TourCode"] = reader["TourCode"] as string;
+                            row["DepartureDate"] = reader["DepartureDate"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["DepartureDate"]).ToString("dd/MM/yyyy")
+                                : "";
                             row["Status"] = reader["Status"] as string;
                             row["CustomerCount"] = reader["CountCustomers"];
                             row["CreatedBy"] = NormalizeUsername(reader["CreatedBy"] as string);
-                            row["CreationDate"] = reader["Creationdate"] != DBNull.Value ? Convert.ToDateTime(reader["Creationdate"]).ToString("dd/MM/yyyy") : "";
+                            row["CreationDate"] = reader["Creationdate"] != DBNull.Value
+                                ? Convert.ToDateTime(reader["Creationdate"]).ToString("dd/MM/yyyy")
+                                : "";
                             row["Amount"] = reader["Amount"];
                             row["AmountThucBan"] = reader["Amountthucban"];
                             row["DepositDeadline"] = reader["DepositDeadline"] != DBNull.Value
@@ -218,14 +246,16 @@ OFFSET @start ROWS FETCH NEXT @length ROWS ONLY OPTION (RECOMPILE);";
         return (lastName + " " + firstName).Trim();
     }
 
-        private string NormalizeGender(string gender)
+    private string NormalizeGender(string gender)
     {
         if (string.IsNullOrWhiteSpace(gender)) return gender;
         gender = gender.Trim();
         if (gender.Equals("F", StringComparison.OrdinalIgnoreCase)) return "Nữ";
         if (gender.Equals("M", StringComparison.OrdinalIgnoreCase)) return "Nam";
         return gender;
-    }private string NormalizeUsername(string username)
+    }
+
+    private string NormalizeUsername(string username)
     {
         if (string.IsNullOrWhiteSpace(username)) return username;
         username = username.Trim();

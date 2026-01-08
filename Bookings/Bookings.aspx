@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Bookings.aspx.cs" Inherits="Bookings" MasterPageFile="~/Site.Master" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeFile="Bookings.aspx.cs" Inherits="Bookings" MasterPageFile="~/Site.Master" %>
 <asp:Content ID="TitleContent" ContentPlaceHolderID="TitleContent" runat="server">Danh sách đặt chỗ</asp:Content>
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
@@ -64,8 +64,8 @@
         #bookingsTable td {
             white-space: nowrap;
         }
-        #bookingsTable th:nth-child(7),
-        #bookingsTable td:nth-child(7) {
+        #bookingsTable th:nth-child(8),
+        #bookingsTable td:nth-child(8) {
             white-space: normal;
         }
         .tag-source {
@@ -102,6 +102,17 @@
             color: #3730a3;
             border-color: #c7d2fe;
         }
+        .tag-tour {
+            display: inline-block;
+            background: #fff7ed;
+            color: #9a3412;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-weight: 600;
+            margin: 2px 0;
+            border: 1px solid #fed7aa;
+            font-size: 12px;
+        }
         #bookingDetailModal .modal-dialog {
             max-width: 900px;
         }
@@ -134,16 +145,23 @@
                         <asp:TextBox ID="txtPhone" runat="server" CssClass="form-control" />
                     </div>
                     <div class="col-md-2 col-lg-2">
-                        <label class="form-label fw-semibold">Ngày đặt chỗ</label>
-                        <asp:TextBox ID="txtBookingDate" runat="server" CssClass="form-control" TextMode="Date" />
+                        <label class="form-label fw-semibold">Từ ngày</label>
+                        <asp:TextBox ID="txtFromDate" runat="server" CssClass="form-control" TextMode="Date" />
+                    </div>
+                    <div class="col-md-2 col-lg-2">
+                        <label class="form-label fw-semibold">Đến ngày</label>
+                        <asp:TextBox ID="txtToDate" runat="server" CssClass="form-control" TextMode="Date" />
                     </div>
                     <div class="col-md-2 col-lg-2">
                         <label class="form-label fw-semibold">Nguồn</label>
                         <asp:TextBox ID="txtSource" runat="server" CssClass="form-control" />
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-3 d-flex align-items-end gap-2">
                         <asp:Button ID="btnFilter" runat="server" Text="Lọc" CssClass="btn btn-primary" />
                         <asp:Button ID="btnReset" runat="server" Text="Xóa lọc" CssClass="btn btn-outline-secondary" CausesValidation="false" />
+                        <a id="btnExportExcel" runat="server" class="btn btn-success btn-sm" title="Export Excel" href="#">
+                            <i class="bi bi-file-earmark-excel"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -153,6 +171,7 @@
                         <tr>
                             <th>TT</th>
                             <th>Booking</th>
+                            <th>Tour</th>
                             <th>Khách</th>
                             <th>Khách hàng</th>
                             <th>Giới tính</th>
@@ -165,80 +184,56 @@
                 </table>
             </div>
         </div>
+
         <div class="modal fade" id="bookingDetailModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Chi tiết booking</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="bookingDetailLoading" class="d-flex justify-content-center my-3" style="display:none;">
-                        <div class="spinner-border text-primary" role="status"></div>
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Chi tiết booking</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div id="bookingDetailContent" style="display:none;">
-                        <div class="row mb-3">
-                            <div class="col-md-4">
-                                <div class="fw-semibold">Booking</div>
-                                <div id="bookingDetailOrderId"></div>
+                    <div class="modal-body">
+                        <div id="bookingDetailLoading" class="d-flex justify-content-center my-3" style="display:none;">
+                            <div class="spinner-border text-primary" role="status"></div>
+                        </div>
+                        <div id="bookingDetailContent" style="display:none;">
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="fw-semibold">Booking</div>
+                                    <div id="bookingDetailOrderId"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="fw-semibold">Tổng khách</div>
+                                    <div id="bookingDetailTotalCustomers"></div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="fw-semibold">Tổng giá bán</div>
+                                    <div id="bookingDetailTotalPrice"></div>
+                                </div>
                             </div>
-                            <div class="col-md-4">
-                                <div class="fw-semibold">Tổng khách</div>
-                                <div id="bookingDetailTotalCustomers"></div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="fw-semibold">Tổng giá bán</div>
-                                <div id="bookingDetailTotalPrice"></div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-striped align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Khách</th>
+                                            <th>Giới tính</th>
+                                            <th>Điện thoại</th>
+                                            <th>Passport</th>
+                                            <th>Phòng</th>
+                                            <th>Giá bán</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="bookingDetailBody"></tbody>
+                                </table>
                             </div>
                         </div>
-                        <div class="table-responsive">
-                            <table class="table table-sm table-striped align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Khách</th>
-                                        <th>Giới tính</th>
-                                        <th>Điện thoại</th>
-                                        <th>Passport</th>
-                                        <th>Phòng</th>
-                                        <th>Giá bán</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bookingDetailBody"></tbody>
-                            </table>
-                        </div>
+                        <div id="bookingDetailError" class="text-danger" style="display:none;"></div>
                     </div>
-                    <div id="bookingDetailError" class="text-danger" style="display:none;"></div>
                 </div>
             </div>
         </div>
     </div>
 
-                <div class="modal-body">
-                    <div id="bookingDetailLoading" class="d-flex justify-content-center my-3" style="display:none;">
-                        <div class="spinner-border text-primary" role="status"></div>
-                    </div>
-                    <div id="bookingDetailContent" style="display:none;">
-                        <div class="table-responsive">
-                            <table class="table table-sm table-striped align-middle mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Khách</th>
-                                        <th>Giới tính</th>
-                                        <th>Điện thoại</th>
-                                        <th>Passport</th>
-                                        <th>Giá bán</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="bookingDetailBody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div id="bookingDetailError" class="text-danger" style="display:none;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    </div>
     <script>
         function renderMoney(val) {
             if (val === null || val === undefined || val === '') return '';
@@ -270,7 +265,8 @@
                         d.orderId = $('#<%=txtOrderId.ClientID%>').val();
                         d.customerName = $('#<%=txtCustomerName.ClientID%>').val();
                         d.phone = $('#<%=txtPhone.ClientID%>').val();
-                        d.bookingDate = $('#<%=txtBookingDate.ClientID%>').val();
+                        d.fromDate = $('#<%=txtFromDate.ClientID%>').val();
+                        d.toDate = $('#<%=txtToDate.ClientID%>').val();
                         d.source = $('#<%=txtSource.ClientID%>').val();
                     }
                 },
@@ -285,6 +281,14 @@
                         if (!data) return '';
                         var safe = $('<div/>').text(data).html();
                         return '<a href="#" class="booking-link" data-orderid="' + safe + '">' + safe + '</a>';
+                    } },
+                    { data: null, render: function (data, type, row) {
+                        var code = row && row.TourCode ? $('<div/>').text(row.TourCode).html() : '';
+                        var date = row && row.DepartureDate ? $('<div/>').text(row.DepartureDate).html() : '';
+                        if (!code && !date) return '';
+                        var codeHtml = code ? '<div class="tag-tour">' + code + '</div>' : '';
+                        var dateHtml = date ? '<div class="text-muted text-date">' + date + '</div>' : '';
+                        return codeHtml + dateHtml;
                     } },
                     { data: 'CustomerCount' },
                     { data: null, render: function (data, type, row) {
@@ -328,7 +332,8 @@
                 $('#<%=txtOrderId.ClientID%>').val('');
                 $('#<%=txtCustomerName.ClientID%>').val('');
                 $('#<%=txtPhone.ClientID%>').val('');
-                $('#<%=txtBookingDate.ClientID%>').val('');
+                $('#<%=txtFromDate.ClientID%>').val('');
+                $('#<%=txtToDate.ClientID%>').val('');
                 $('#<%=txtSource.ClientID%>').val('');
                 table.ajax.reload();
             });
@@ -337,6 +342,18 @@
                 e.preventDefault();
                 var orderId = $(this).data('orderid');
                 loadBookingDetail(orderId);
+            });
+
+            $('#<%=btnExportExcel.ClientID%>').on('click', function (e) {
+                e.preventDefault();
+                var url = 'BookingsExport.aspx?'
+                    + 'orderId=' + encodeURIComponent($('#<%=txtOrderId.ClientID%>').val() || '')
+                    + '&customerName=' + encodeURIComponent($('#<%=txtCustomerName.ClientID%>').val() || '')
+                    + '&phone=' + encodeURIComponent($('#<%=txtPhone.ClientID%>').val() || '')
+                    + '&fromDate=' + encodeURIComponent($('#<%=txtFromDate.ClientID%>').val() || '')
+                    + '&toDate=' + encodeURIComponent($('#<%=txtToDate.ClientID%>').val() || '')
+                    + '&source=' + encodeURIComponent($('#<%=txtSource.ClientID%>').val() || '');
+                window.location.href = url;
             });
         });
 
@@ -389,8 +406,7 @@
                 error: function () {
                     $('#bookingDetailError').text('Lỗi tải chi tiết booking').show();
                     $('#bookingDetailLoading').hide();
-                },
-                complete: function () { }
+                }
             });
         }
     </script>
