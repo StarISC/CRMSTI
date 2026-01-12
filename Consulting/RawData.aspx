@@ -4,18 +4,25 @@
     <style>
         .form-section-title { font-weight: 700; color: #1d2353; }
         .form-hint { color: #64748b; }
+        #rawDataTable thead th { white-space: nowrap; }
+        #rawDataTable tbody td:nth-child(2),
+        #rawDataTable tbody td:nth-child(3),
+        #rawDataTable tbody td:nth-child(4),
+        #rawDataTable tbody td:nth-child(5) {
+            white-space: nowrap;
+        }
     </style>
 </asp:Content>
 <asp:Content ID="MainContent" ContentPlaceHolderID="MainContent" runat="server">
     <div class="card shadow-sm">
         <div class="card-body">
             <h4 class="form-section-title mb-2">Dữ liệu thô</h4>
-            <p class="form-hint mb-4">Nhập thông tin để chuẩn bị lấy dữ liệu liên hệ.</p>
+            <p class="form-hint mb-4">Nhập thông tin từ từ chuẩn bị lấy dữ liệu liên hệ.</p>
 
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Tên tỉnh</label>
-                    <asp:TextBox ID="txtProvince" runat="server" CssClass="form-control" placeholder="Ví dụ: TP. Hồ Chí Minh" />
+                    <asp:TextBox ID="txtProvince" runat="server" CssClass="form-control" placeholder="VD: TP. Hồ Chí Minh" />
                 </div>
                 <div class="col-md-8">
                     <label class="form-label fw-semibold">Đường link</label>
@@ -33,6 +40,14 @@
                     <asp:Button ID="btnSubmit" runat="server" Text="Tải HTML" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
                     <asp:Button ID="btnClear" runat="server" Text="Xóa" CssClass="btn btn-outline-secondary" OnClick="btnClear_Click" />
                 </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-semibold">Bộ lọc</label>
+                    <asp:TextBox ID="txtResultFilter" runat="server" CssClass="form-control" placeholder="Tên công ty, MST, đại diện, điện thoại..." />
+                </div>
+                <div class="col-md-6 d-flex align-items-end gap-2">
+                    <button type="button" id="btnApplyFilter" class="btn btn-dark">Lọc kết quả</button>
+                    <button type="button" id="btnClearFilter" class="btn btn-outline-secondary">Xóa lọc</button>
+                </div>
                 <div class="col-12">
                     <asp:Label ID="lblStatus" runat="server" CssClass="text-muted small"></asp:Label>
                 </div>
@@ -44,7 +59,7 @@
         <div class="card-body">
             <h6 class="form-section-title mb-3">Kết quả trích xuất</h6>
             <div class="table-responsive">
-                <table class="table table-sm table-striped mb-0">
+                <table id="rawDataTable" class="table table-sm table-striped mb-0" style="width:100%">
                     <thead>
                         <tr>
                             <th>Tên công ty</th>
@@ -56,25 +71,54 @@
                             <th>Link chi tiết</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <asp:Repeater ID="rptResults" runat="server">
-                            <ItemTemplate>
-                                <tr>
-                                    <td><%# Eval("CompanyName") %></td>
-                                    <td class="text-nowrap"><%# Eval("TaxCode") %></td>
-                                    <td><%# Eval("Representative") %></td>
-                                    <td><%# Eval("ProvinceFromAddress") %></td>
-                                    <td class="text-nowrap"><%# Eval("Phone") %></td>
-                                    <td><%# Eval("Address") %></td>
-                                    <td>
-                                        <a href="<%# Eval("DetailUrl") %>" target="_blank">Xem</a>
-                                    </td>
-                                </tr>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </tbody>
                 </table>
             </div>
         </div>
     </div>
+    <script>
+        $(function () {
+            var table = $('#rawDataTable').DataTable({
+                processing: true,
+                serverSide: true,
+                searching: false,
+                ajax: {
+                    url: 'RawDataApi.aspx',
+                    type: 'POST',
+                    data: function (d) {
+                        d.keyword = $('#<%=txtResultFilter.ClientID%>').val();
+                    },
+                    dataSrc: function (json) {
+                        if (json.error) {
+                            alert('Loi tai du lieu: ' + json.error);
+                            return [];
+                        }
+                        return json.data;
+                    }
+                },
+                pageLength: 50,
+                lengthMenu: [[20, 50, 100, 200], [20, 50, 100, 200]],
+                columns: [
+                    { data: 'CompanyName' },
+                    { data: 'TaxCode', className: 'text-nowrap' },
+                    { data: 'Representative' },
+                    { data: 'ProvinceFromAddress' },
+                    { data: 'Phone', className: 'text-nowrap' },
+                    { data: 'Address' },
+                    { data: 'DetailUrl', orderable: false, render: function (data) {
+                        if (!data) return '';
+                        var safe = $('<div/>').text(data).html();
+                        return '<a href="' + safe + '" target="_blank" rel="noopener noreferrer">Xem</a>';
+                    }}
+                ]
+            });
+
+            $('#btnApplyFilter').on('click', function () {
+                table.ajax.reload();
+            });
+            $('#btnClearFilter').on('click', function () {
+                $('#<%=txtResultFilter.ClientID%>').val('');
+                table.ajax.reload();
+            });
+        });
+    </script>
 </asp:Content>

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Globalization;
@@ -61,13 +61,15 @@ public partial class Reports_MonthlyReport : BasePage
         rptTopDepartures.DataSource = GetTopDepartures(range);
         rptTopDepartures.DataBind();
 
+        rptTopProducts.DataSource = GetTopProducts(range);
+        rptTopProducts.DataBind();
+
         rptOverdueList.DataSource = GetOverdue(range);
         rptOverdueList.DataBind();
 
         rptUpcomingList.DataSource = GetUpcomingDeadlines(range);
         rptUpcomingList.DataBind();
     }
-
     private SummaryResult GetSummary(DateRange range)
     {
         var result = new SummaryResult();
@@ -250,7 +252,6 @@ ORDER BY Revenue DESC, TotalBookings DESC;";
         }
         return items;
     }
-
     private List<StaffRow> GetTopStaff(DateRange range)
     {
         var items = new List<StaffRow>();
@@ -463,6 +464,82 @@ ORDER BY TotalBookings DESC, DepartureDate DESC;";
         }
         return items;
     }
+    private List<ProductRow> GetTopProducts(DateRange range)
+    {
+        var items = new List<ProductRow>();
+        using (var conn = Db.CreateConnection())
+        {
+            conn.Open();
+            var sql = @"
+DECLARE @from date = @fromDate;
+DECLARE @to date = @toDate;
+WITH status_calc AS (
+    SELECT
+        o.orderid,
+        o.Amountthucban,
+        CASE
+            WHEN ISNULL(pay.TotalPaid, 0) = 0 THEN
+                CASE
+                    WHEN o.DepositDeadline IS NOT NULL AND CONVERT(date, o.DepositDeadline) < CONVERT(date, GETDATE()) THEN 'CX'
+                    ELSE 'OP'
+                END
+            WHEN ISNULL(o.Amountthucban, 0) > 0 AND ISNULL(pay.TotalPaid, 0) >= ISNULL(o.Amountthucban, 0) THEN 'FP'
+            ELSE 'BK'
+        END AS Status
+    FROM [order] o
+    OUTER APPLY (
+        SELECT SUM(ISNULL(p.Amount, 0)) AS TotalPaid
+        FROM payment p
+        WHERE p.OrderId = o.orderid
+    ) pay
+    WHERE o.Visible = 1
+      AND o.Creationdate >= @from AND o.Creationdate < DATEADD(day, 1, @to)
+),
+product_data AS (
+    SELECT
+        sc.orderid,
+        sc.Amountthucban,
+        ISNULL(NULLIF(LTRIM(RTRIM(p.name)), ''), N'(Không rõ)') AS ProductName
+    FROM status_calc sc
+    JOIN customer c ON c.orderID = sc.orderid AND c.Visible = 1
+    JOIN product p ON p.id = c.ProductID
+    WHERE sc.Status IN ('BK','FP')
+)
+SELECT TOP 10
+    ProductName,
+    COUNT(DISTINCT orderid) AS TotalBookings,
+    SUM(ISNULL(guest.CountGuests, 0)) AS TotalGuests,
+    SUM(ISNULL(Amountthucban, 0)) AS Revenue
+FROM product_data pd
+OUTER APPLY (
+    SELECT COUNT(*) AS CountGuests
+    FROM customer c2
+    WHERE c2.orderID = pd.orderid AND c2.Visible = 1
+) guest
+GROUP BY ProductName
+ORDER BY Revenue DESC, TotalBookings DESC;";
+            using (var cmd = new SqlCommand(sql, conn))
+            {
+                cmd.Parameters.AddWithValue("@fromDate", range.From);
+                cmd.Parameters.AddWithValue("@toDate", range.To);
+                cmd.CommandTimeout = Db.CommandTimeoutSeconds;
+                using (var reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        items.Add(new ProductRow
+                        {
+                            ProductName = reader["ProductName"] as string,
+                            TotalBookings = SafeInt(reader["TotalBookings"]),
+                            TotalGuests = SafeInt(reader["TotalGuests"]),
+                            Revenue = SafeDecimal(reader["Revenue"]).ToString("N0", VnCulture)
+                        });
+                    }
+                }
+            }
+        }
+        return items;
+    }
 
     private List<DeadlineItem> GetOverdue(DateRange range)
     {
@@ -565,7 +642,6 @@ ORDER BY o.DepositDeadline ASC;";
         }
         return items;
     }
-
     private void EnsureDefaultFilter()
     {
         var range = GetDateRange();
@@ -663,6 +739,14 @@ ORDER BY o.DepositDeadline ASC;";
     {
         public string DepartureDate { get; set; }
         public int TotalBookings { get; set; }
+    }
+
+    private class ProductRow
+    {
+        public string ProductName { get; set; }
+        public int TotalBookings { get; set; }
+        public int TotalGuests { get; set; }
+        public string Revenue { get; set; }
     }
 
     private class DeadlineItem
@@ -776,7 +860,7 @@ ORDER BY o.DepositDeadline ASC;";
         if (ContainsAny(name, new[] { "phap", "france", "anh", "england", "uk", "germany", "duc", "italy", "y", "spain", "tay ban nha", "switzerland", "thuy si", "netherlands", "ha lan", "belgium", "ao", "austria", "czech", "hungary", "poland", "greece", "hy lap", "portugal", "norway", "sweden", "denmark", "finland", "russia" }))
             return "Châu Âu";
         if (ContainsAny(name, new[] { "hoa ky", "usa", "united states", "america", "alaska", "canada" }))
-            return "Mỹ & Alaska (Có Canada)";
+            return "Mỹ & Alaska (Canada)";
         if (ContainsAny(name, new[] { "australia", "new zealand", "newzealand", "nz" }))
             return "Úc & New Zealand";
         return "Khác";

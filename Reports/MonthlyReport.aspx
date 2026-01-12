@@ -233,6 +233,33 @@
                         </table>
                     </div>
                 </div>
+                <div class="col-md-12">
+                    <h6 class="report-section-title">Top sản phẩm theo doanh thu</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Sản phẩm</th>
+                                    <th class="text-end">Booking</th>
+                                    <th class="text-end">Số khách</th>
+                                    <th class="text-end">Doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <asp:Repeater ID="rptTopProducts" runat="server">
+                                    <ItemTemplate>
+                                        <tr>
+                                            <td><%# Eval("ProductName") %></td>
+                                            <td class="text-end"><%# Eval("TotalBookings") %></td>
+                                            <td class="text-end"><%# Eval("TotalGuests") %></td>
+                                            <td class="text-end"><%# Eval("Revenue") %></td>
+                                        </tr>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

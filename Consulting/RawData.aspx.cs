@@ -62,8 +62,6 @@ public partial class Consulting_RawData : BasePage
             EnrichPhones(results);
             EnsureRawContactsTable();
             SaveContacts(results, province, url);
-            rptResults.DataSource = results;
-            rptResults.DataBind();
 
             lblStatus.Text = "Đã tải HTML: " + results.Count + " công ty.";
         }
@@ -366,10 +364,16 @@ END;";
             foreach (var item in items)
             {
                 var sql = @"
-IF NOT EXISTS (
+IF EXISTS (
     SELECT 1 FROM dbo.cf_raw_contacts
-    WHERE ISNULL(tax_code, '') = @taxCode AND ISNULL(detail_url, '') = @detailUrl
+    WHERE ISNULL(tax_code, '') = @taxCode AND @taxCode <> ''
 )
+BEGIN
+    UPDATE dbo.cf_raw_contacts
+    SET phone = CASE WHEN @phone = '' THEN phone ELSE @phone END
+    WHERE ISNULL(tax_code, '') = @taxCode;
+END
+ELSE
 BEGIN
     INSERT INTO dbo.cf_raw_contacts
         (province, company_name, tax_code, representative, phone, address, province_from_address, detail_url, source_url)
